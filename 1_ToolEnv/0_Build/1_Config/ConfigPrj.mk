@@ -1,13 +1,13 @@
 ###############################################################################
 #                                                                             #
-#        Copyright © 2011 Infineon Technologies AG. All rights reserved.      #
+#        Copyright ï¿½2011 Infineon Technologies AG. All rights reserved.      #
 #                                                                             #
 #                                                                             #
 #                              IMPORTANT NOTICE                               #
 #                                                                             #
 #                                                                             #
 # Infineon Technologies AG (Infineon) is supplying this file for use          #
-# exclusively with Infineon’s microcontroller products. This file can be      #
+# exclusively with Infineonî–¸ microcontroller products. This file can be      #
 # freely distributed within development tools that are supporting such        #
 # microcontroller products.                                                   #
 #                                                                             #
@@ -41,7 +41,7 @@ TOOL_CHAIN_MAIN:=Gnuc
 # Note: When both USE_FILE_PATTERN and DISCARD_FILE_PATTERN are used DISCARD_FILE_PATTERN has priority
 # Note: If multiple patterns are to be defined in USE_FILE_PATTERN and DISCARD_FILE_PATTERN separate them with comma (,)
 USE_FILE_PATTERN=
-DISCARD_FILE_PATTERN=
+DISCARD_FILE_PATTERN=*makefsdata/*
 
 #Name of the TOOL_CHAIN_SECOND is NOT FLEXIBLE, is always fixed to ToolChain_SecCore
 #The file names CfgToolChain_SecCore.mk and Lcf_ToolChain_SecCore.lsl can not be changed
@@ -55,8 +55,8 @@ TOOL_CHAIN_SPECIAL:=$(TOOL_CHAIN_MAIN)
 DIFFERED_FROM_AUTOMAKES:=
 
 #Display the build commands
-DISPLAY_BUILD_CMD:=No
-#DISPLAY_BUILD_CMD:=yes
+#DISPLAY_BUILD_CMD:=No
+DISPLAY_BUILD_CMD:=yes
 
 #Enable multiprocess
 ENABLE_MULTI_PROCESS:=no

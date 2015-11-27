@@ -28,6 +28,23 @@
 #include "Cpu0_Main.h"
 #include "SysSe/Bsp/Bsp.h"
 #include "EthDemo.h"
+#include "Ifx_Lwip.h"
+#include "IfxPort_Io.h"
+#include "IfxPort_cfg.h"
+
+extern IfxEth	Ifx_g_Eth;
+
+#define TRANSPORT_HEADERS_SIZE (PBUF_LINK_HLEN + PBUF_IP_HLEN + PBUF_TRANSPORT_HLEN)
+
+const IfxPort_Io_ConfigPin	 configPin[] = {
+		{&IfxPort_P33_6,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_7,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+};
+
+const IfxPort_Io_Config conf = {
+		sizeof(configPin)/sizeof(IfxPort_Io_ConfigPin),
+		(IfxPort_Io_ConfigPin *)configPin
+};
 
 /******************************************************************************/
 /*------------------------Inline Function Prototypes--------------------------*/
@@ -56,6 +73,12 @@ App_Cpu0 g_AppCpu0; /**< \brief CPU 0 global data */
  */
 int core0_main(void)
 {
+    udp_pcb_t * udp;
+    ip_addr_t addr;
+    pbuf_t *p = (void*)0;//(pbuf_t *)pbuf_alloc_special(MEMP_PBUF);
+    void *ethRam;
+    uint16 idx;
+
     /*
      * !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
      * Enable the watchdog in the demo if it is required and also service the watchdog periodically
@@ -69,17 +92,63 @@ int core0_main(void)
     g_AppCpu0.info.sysFreq = IfxScuCcu_getSpbFrequency();
     g_AppCpu0.info.stmFreq = IfxStm_getFrequency(&MODULE_STM0);
 
+
+    IfxPort_Io_initModule(&conf);
+    for (idx = 0; idx < conf.size; idx++)
+    {
+    	IfxPort_Io_ConfigPin *tbl = &conf.pinTable[idx];
+    	IfxPort_setPinHigh(tbl->pin->port, tbl->pin->pinIndex); // P33.0 = 0
+    }
+
+    initStm0();
+
     /* Enable the global interrupts of this CPU */
     IfxCpu_enableInterrupts();
 
     /* Demo init */
+
+    Ifx_Lwip_Config config;
+
+    IP4_ADDR(&config.ipAddr, 192, 168, 7, 123);
+    IP4_ADDR(&config.netMask, 255, 255, 255, 0);
+    IP4_ADDR(&config.gateway, 192, 168, 7, 6);
+    MAC_ADDR(&config.ethAddr, 0x00, 0x20, 0x30, 0x40, 0x50, 0x60);
+#if 1
+    Ifx_Lwip_init(&config);
+#else
     EthDemo_init();
+    while (!IfxEth_Phy_Pef7071_link())
+    {}
     EthDemo_run();
+#endif
+
+    addr.addr8[3] = 6;
+    addr.addr8[2] = 7;
+    addr.addr8[1] = 168;
+    addr.addr8[0] = 192;
+#if 1
+    udp = udp_new();
+    ethRam = IfxEth_waitTransmitBuffer(&Ifx_g_Eth);
+#endif
 
     /* background endless loop */
     while (TRUE)
     {
+#if 1
+        Ifx_Lwip_pollTimerFlags();
+        Ifx_Lwip_pollReceiveFlags();
+        p = (pbuf_t *)memp_malloc(MEMP_PBUF);
+        p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
+        p->len = 100;
+        p->next = NULL;
+        p->ref = 1;
+        p->type = PBUF_REF;
+        udp_sendto_if(udp, p, &addr, 5001, Ifx_Lwip_getNetIf());
+        pbuf_free(p);
+#endif
         REGRESSION_RUN_STOP_PASS;
+        IfxPort_togglePin(&MODULE_P33, 6); // P33.0 = 0
+
     }
 
     return 0;

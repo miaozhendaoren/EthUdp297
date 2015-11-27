@@ -413,11 +413,13 @@ void IfxEth_init(IfxEth *eth, const IfxEth_Config *config)
         uint32 timeout = 0;
 
         // FIXME the timeout value may be defined in IfxEth_cfg.h
-        while ((ETH_BUS_MODE.B.SWR == 1) && (timeout < 1000))
+        IfxPort_setPinLow(&MODULE_P33, 6);
+        while ((ETH_BUS_MODE.B.SWR == 1) && (timeout < 100000))
         {
             /* wait reset is finished or timeout. */
             timeout++;
         }
+        IfxPort_setPinHigh(&MODULE_P33, 6);
     }
 
     /* configure bus mode */
@@ -483,6 +485,8 @@ void IfxEth_init(IfxEth *eth, const IfxEth_Config *config)
         config->phyInit();          // init PHY (100Mbit, full duplex with RMII)
     }
 
+    while (!config->phyLink()) {}
+    IfxPort_setPinLow(&MODULE_P33, 6);
 #endif
 
     //eth->module  = &MODULE_ETH;

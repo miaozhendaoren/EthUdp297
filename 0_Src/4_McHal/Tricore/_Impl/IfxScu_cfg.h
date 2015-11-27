@@ -45,6 +45,7 @@
 
 #define IFXSCU_VCO_BASE_FREQUENCY        (100000000.0)
 #define IFXSCU_EVR_OSC_FREQUENCY         (100000000.0)
+#define IFX_CFG_STM_TICKS_PER_MS	    (IFX_CFG_SCU_PLL_FREQUENCY / 2 / 1000)
 
 /*The following frequency is the PLL free running frequency */
 /* FIXME is this not redundant to IFXSCU_VCO_BASE_FREQUENCY */
