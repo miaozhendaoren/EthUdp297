@@ -78,6 +78,7 @@ int core0_main(void)
     pbuf_t *p = (void*)0;//(pbuf_t *)pbuf_alloc_special(MEMP_PBUF);
     void *ethRam;
     uint16 idx;
+    uint16 total;
 
     /*
      * !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
@@ -132,22 +133,25 @@ int core0_main(void)
 #endif
 
     /* background endless loop */
+    total = 0;
     while (TRUE)
     {
-#if 1
         Ifx_Lwip_pollTimerFlags();
         Ifx_Lwip_pollReceiveFlags();
-        p = (pbuf_t *)memp_malloc(MEMP_PBUF);
-        p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
-        p->len = 100;
-        p->next = NULL;
-        p->ref = 1;
-        p->type = PBUF_REF;
-        udp_sendto_if(udp, p, &addr, 5001, Ifx_Lwip_getNetIf());
-        pbuf_free(p);
-#endif
+        if (total <= 10000) {
+        	total++;
+			p = (pbuf_t *)memp_malloc(MEMP_PBUF);
+			p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
+			p->len = 100;
+			p->tot_len = p->len;
+			p->next = NULL;
+			p->ref = 1;
+			p->type = PBUF_REF;
+			udp_sendto_if(udp, p, &addr, 5001, Ifx_Lwip_getNetIf());
+			pbuf_free(p);
+	        IfxPort_togglePin(&MODULE_P33, 6); // P33.0 = 0
+        }
         REGRESSION_RUN_STOP_PASS;
-        IfxPort_togglePin(&MODULE_P33, 6); // P33.0 = 0
 
     }
 

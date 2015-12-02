@@ -51,7 +51,9 @@ const IfxEth_Config cfg_Eth = {
     .isrProvider = ISR_PROVIDER_ETH
 };
 
+#pragma section ".bss_cpu0" awc0
 IfxEth              Ifx_g_Eth;
+#pragma section
 
 IfxEth *IfxEth_get(void)
 {
