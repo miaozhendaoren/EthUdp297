@@ -27,18 +27,26 @@
 
 #include "Cpu0_Main.h"
 #include "SysSe/Bsp/Bsp.h"
-#include "EthDemo.h"
 #include "Ifx_Lwip.h"
 #include "IfxPort_Io.h"
 #include "IfxPort_cfg.h"
 
 extern IfxEth	Ifx_g_Eth;
+void gIfxEth_initTransmitDescriptors(void);
+void gIfxEth_startTransmitter(void);
+void gIfxEth_init(void);
 
 #define TRANSPORT_HEADERS_SIZE (PBUF_LINK_HLEN + PBUF_IP_HLEN + PBUF_TRANSPORT_HLEN)
 
 const IfxPort_Io_ConfigPin	 configPin[] = {
 		{&IfxPort_P33_6,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
 		{&IfxPort_P33_7,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_8,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_9,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_10,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_11,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_12,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
+		{&IfxPort_P33_13,  IfxPort_Mode_outputPushPullGeneral, IfxPort_PadDriver_cmosAutomotiveSpeed1},              // P00.0
 };
 
 const IfxPort_Io_Config conf = {
@@ -71,6 +79,8 @@ App_Cpu0 g_AppCpu0; /**< \brief CPU 0 global data */
  *
  *  It initialise the system and enter the endless loop that handles the demo
  */
+volatile uint32 stat;
+
 int core0_main(void)
 {
     udp_pcb_t * udp;
@@ -114,46 +124,62 @@ int core0_main(void)
     IP4_ADDR(&config.netMask, 255, 255, 255, 0);
     IP4_ADDR(&config.gateway, 192, 168, 7, 6);
     MAC_ADDR(&config.ethAddr, 0x00, 0x20, 0x30, 0x40, 0x50, 0x60);
-#if 1
+
     Ifx_Lwip_init(&config);
-#else
-    EthDemo_init();
-    while (!IfxEth_Phy_Pef7071_link())
-    {}
-    EthDemo_run();
-#endif
 
     addr.addr8[3] = 6;
     addr.addr8[2] = 7;
     addr.addr8[1] = 168;
     addr.addr8[0] = 192;
-#if 1
-    udp = udp_new();
-    ethRam = IfxEth_waitTransmitBuffer(&Ifx_g_Eth);
-#endif
 
     /* background endless loop */
-    total = 0;
+    IfxPort_setPinHigh(&MODULE_P33, 6); // P33.0 = 0
+    total = Ifx_g_Eth.config.phyLink();
+    udp = udp_new();
     while (TRUE)
     {
         Ifx_Lwip_pollTimerFlags();
         Ifx_Lwip_pollReceiveFlags();
-        if (total <= 10000) {
-        	total++;
+
+        if (total != Ifx_g_Eth.config.phyLink()) {
+        	total = Ifx_g_Eth.config.phyLink();
+            if (total == 1) {
+    			IfxPort_setPinLow(&MODULE_P33, 6);
+    			gIfxEth_initTransmitDescriptors();
+    			gIfxEth_startTransmitter();
+    		} else {
+    			IfxPort_setPinHigh(&MODULE_P33, 6);
+    			IfxEth_stopTransmitter(&Ifx_g_Eth);
+    		}
+        }
+
+        stat = IfxEth_Phy_Pef7071_MIIState();
+
+        if ((stat & 0x0003) != 0x01) {
+            IfxPort_setPinLow(&MODULE_P33, 7);
+        } else {
+            IfxPort_setPinHigh(&MODULE_P33, 7);
+        }
+       	if (Ifx_g_Eth.config.phyLink() && (ethRam = IfxEth_getTransmitBuffer(&Ifx_g_Eth))) {
 			p = (pbuf_t *)memp_malloc(MEMP_PBUF);
+			if (p == NULL) {
+				continue;
+			}
 			p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
 			p->len = 100;
 			p->tot_len = p->len;
 			p->next = NULL;
 			p->ref = 1;
 			p->type = PBUF_REF;
-			udp_sendto_if(udp, p, &addr, 5001, Ifx_Lwip_getNetIf());
+			udp_sendto_if(udp, p, &addr, 5001, &Ifx_g_Lwip.netif);
 			pbuf_free(p);
-	        IfxPort_togglePin(&MODULE_P33, 6); // P33.0 = 0
+			IfxPort_setPinLow(&MODULE_P33, 8); // P33.0 = 0
+        } else {
+			IfxPort_setPinHigh(&MODULE_P33, 8); // P33.0 = 0
         }
         REGRESSION_RUN_STOP_PASS;
-
     }
+	udp_remove(udp);
 
     return 0;
 }

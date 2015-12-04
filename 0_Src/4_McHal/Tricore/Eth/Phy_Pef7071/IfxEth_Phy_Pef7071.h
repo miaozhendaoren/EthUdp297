@@ -52,6 +52,11 @@ IFX_EXTERN uint32 IfxEth_Phy_Pef7071_init(void);
  */
 IFX_EXTERN boolean IfxEth_Phy_Pef7071_link(void);
 
+IFX_EXTERN uint32 IfxEth_Phy_Pef7071_Stat(void);
+IFX_EXTERN uint32 IfxEth_Phy_Pef7071_MIIState(void);
+IFX_EXTERN uint32 IfxEth_Phy_Pef7071_EECTRL(void);
+void PhyTest(void);
+
 /** \} */
 
 /******************************************************************************/

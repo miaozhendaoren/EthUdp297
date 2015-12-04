@@ -34,6 +34,7 @@
 #include "IfxEth.h"
 #include "IfxPort_reg.h"
 
+extern IfxEth              Ifx_g_Eth;
 /** \addtogroup IfxLld_Eth_Std_Configuration
  * \{ */
 
@@ -136,9 +137,15 @@ void IfxEth_stopTransmitter(IfxEth *eth)
 
     ETH_TRANSMIT_POLL_DEMAND.U = 0;
     ETH_OPERATION_MODE.B.ST    = 0;
+    ETH_OPERATION_MODE.B.FTF = 1;
     ETH_MAC_CONFIGURATION.B.TE = 0;
 }
 
+
+void gIfxEth_startTransmitter()
+{
+	IfxEth_startTransmitter(&Ifx_g_Eth);
+}
 
 void IfxEth_startTransmitter(IfxEth *eth)
 {
@@ -305,6 +312,10 @@ void IfxEth_readMacAddress(IfxEth *eth, uint8 *macAddress)
     *((uint16 *)(&macAddress[4])) = (uint16)(ETH_MAC_ADDRESS_G00_HIGH.U & 0xFFFFU);
 }
 
+void gIfxEth_initTransmitDescriptors(void)
+{
+	IfxEth_initTransmitDescriptors(&Ifx_g_Eth);
+}
 
 static void IfxEth_initTransmitDescriptors(IfxEth *eth)
 {
@@ -398,6 +409,11 @@ static void IfxEth_initReceiveDescriptors(IfxEth *eth)
 }
 
 
+void gIfxEth_init()
+{
+	IfxEth_init(&Ifx_g_Eth, &Ifx_g_Eth.config);
+}
+
 void IfxEth_init(IfxEth *eth, const IfxEth_Config *config)
 {
 #ifndef _WIN32
@@ -485,8 +501,6 @@ void IfxEth_init(IfxEth *eth, const IfxEth_Config *config)
         config->phyInit();          // init PHY (100Mbit, full duplex with RMII)
     }
 
-    while (!config->phyLink()) {}
-    IfxPort_setPinLow(&MODULE_P33, 6);
 #endif
 
     //eth->module  = &MODULE_ETH;
