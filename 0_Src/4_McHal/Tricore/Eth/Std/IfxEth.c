@@ -27,6 +27,7 @@
 /******************************************************************************/
 
 #include "IfxEth.h"
+#include "vars.h"
 
 /******************************************************************************/
 /*-----------------------Exported Variables/Constants-------------------------*/
@@ -39,6 +40,8 @@ IfxEth_RxDescrList IfxEth_rxDescr;
 uint8              IfxEth_txBuffer[IFXETH_MAX_TX_BUFFERS][IFXETH_RTX_BUFFER_SIZE];
 
 IfxEth_TxDescrList IfxEth_txDescr;
+
+extern IfxEth              Ifx_g_Eth;
 
 /******************************************************************************/
 /*-------------------------Function Implementations---------------------------*/
@@ -124,9 +127,12 @@ void IfxEth_init(IfxEth *eth, const IfxEth_Config *config)
     {
         uint32 timeout = 0;
 
-        while ((IfxEth_isSoftwareResetDone(eth) == 0) && (timeout < IFXETH_MAX_TIMEOUT_VALUE))
+        while ((IfxEth_isSoftwareResetDone(eth) == 0))
         {
             timeout++;
+            if (timeout < IFXETH_MAX_TIMEOUT_VALUE)
+            	continue;
+            break;
         }
     }
 
@@ -279,7 +285,10 @@ void IfxEth_initReceiveDescriptors(IfxEth *eth)
     /* write descriptor list base address */
     IfxEth_setReceiveDescriptorAddress(&MODULE_ETH, IfxEth_getBaseRxDescriptor(eth));
 }
-
+void gIfxEth_initTransmitDescriptors(void)
+{
+	IfxEth_initTransmitDescriptors(&Ifx_g_Eth);
+}
 
 void IfxEth_initTransmitDescriptors(IfxEth *eth)
 {

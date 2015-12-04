@@ -51,6 +51,7 @@ IFX_EXTERN uint32 IfxEth_Phy_Pef7071_init(void);
  * \return Link status
  */
 IFX_EXTERN boolean IfxEth_Phy_Pef7071_link(void);
+IFX_EXTERN uint16 IfxEth_Phy_Pef7071_MIIState(void);
 
 /**
  * \return None

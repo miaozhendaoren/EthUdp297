@@ -31,11 +31,13 @@
 #include "IfxPort_PinMap.h"
 #include "IfxPort_Io.h"
 #include "IfxPort_cfg.h"
+#include "vars.h"
 
 extern IfxEth	Ifx_g_Eth;
 void gIfxEth_initTransmitDescriptors(void);
 void gIfxEth_startTransmitter(void);
 void gIfxEth_init(void);
+
 
 #define TRANSPORT_HEADERS_SIZE (PBUF_LINK_HLEN + PBUF_IP_HLEN + PBUF_TRANSPORT_HLEN)
 
@@ -81,13 +83,14 @@ App_Cpu0 g_AppCpu0; /**< \brief CPU 0 global data */
  *  It initialise the system and enter the endless loop that handles the demo
  */
 volatile uint32 stat;
+volatile void *ethRam;
+volatile struct stat_report report;
 
 int core0_main(void)
 {
     udp_pcb_t * udp;
     ip_addr_t addr;
     pbuf_t *p = (void*)0;//(pbuf_t *)pbuf_alloc_special(MEMP_PBUF);
-    void *ethRam;
     uint16 idx;
     uint16 total;
 
@@ -105,6 +108,8 @@ int core0_main(void)
     g_AppCpu0.info.stmFreq = IfxStm_getFrequency(&MODULE_STM0);
 
 
+    report.position = 0;
+
     IfxPort_Io_initModule(&conf);
     for (idx = 0; idx < conf.size; idx++)
     {
@@ -118,6 +123,7 @@ int core0_main(void)
     IfxCpu_enableInterrupts();
 
     /* Demo init */
+    wMultican_init();
 
     Ifx_Lwip_Config config;
 
@@ -136,6 +142,13 @@ int core0_main(void)
     /* background endless loop */
     IfxPort_setPinHigh(&MODULE_P33, 6); // P33.0 = 0
     total = Ifx_g_Eth.config.phyLink();
+    if (total == 1) {
+    	report.phy_link = 1;
+    } else {
+    	report.phy_link = 0;
+    }
+    ethRam = NULL_PTR;
+
     udp = udp_new();
     while (TRUE)
     {
@@ -144,17 +157,21 @@ int core0_main(void)
 
         if (total != Ifx_g_Eth.config.phyLink()) {
         	total = Ifx_g_Eth.config.phyLink();
-            if (total == 1) {
+        	if (total == 1) {
     			IfxPort_setPinLow(&MODULE_P33, 6);
-    			//gIfxEth_initTransmitDescriptors();
-    			//gIfxEth_startTransmitter();
+    			netif_set_up(&Ifx_g_Lwip.netif);
+    			IfxEth_startTransmitter(Ifx_g_Lwip.netif.state);
     		} else {
+    			netif_set_down(&Ifx_g_Lwip.netif);
     			IfxPort_setPinHigh(&MODULE_P33, 6);
-    			IfxEth_stopTransmitter(&Ifx_g_Eth);
     		}
         }
 
-        //stat = IfxEth_Phy_Pef7071_MIIState();
+        report.phy_link = total;
+        report.mdio_stat = IfxEth_Phy_Pef7071_MIIState();
+        report.ethRam = ethRam!=NULL?1:0;
+
+        wMultiCanNode0Demo_run(report, 0);
 
         if ((stat & 0x0003) != 0x01) {
             IfxPort_setPinLow(&MODULE_P33, 7);
@@ -163,18 +180,17 @@ int core0_main(void)
         }
        	if (Ifx_g_Eth.config.phyLink() && (ethRam = IfxEth_getTransmitBuffer(&Ifx_g_Eth))) {
 			p = (pbuf_t *)memp_malloc(MEMP_PBUF);
-			if (p == NULL) {
-				continue;
+			if (p != NULL) {
+				p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
+				p->len = 100;
+				p->tot_len = p->len;
+				p->next = NULL;
+				p->ref = 1;
+				p->type = PBUF_REF;
+				udp_sendto_if(udp, p, &addr, 5001, &Ifx_g_Lwip.netif);
+				pbuf_free(p);
+				IfxPort_setPinLow(&MODULE_P33, 8); // P33.0 = 0
 			}
-			p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)ethRam));
-			p->len = 100;
-			p->tot_len = p->len;
-			p->next = NULL;
-			p->ref = 1;
-			p->type = PBUF_REF;
-			udp_sendto_if(udp, p, &addr, 5001, &Ifx_g_Lwip.netif);
-			pbuf_free(p);
-			IfxPort_setPinLow(&MODULE_P33, 8); // P33.0 = 0
         } else {
 			IfxPort_setPinHigh(&MODULE_P33, 8); // P33.0 = 0
         }

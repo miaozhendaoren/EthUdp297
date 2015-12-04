@@ -145,6 +145,18 @@ uint32 IfxEth_Phy_Pef7071_init(void)
     return 1;
 }
 
+uint16 IfxEth_Phy_Pef7071_MIIState(void)
+{
+	uint16 value = 0;
+
+   if (IfxEth_Phy_Pef7071_iPhyInitDone)
+	{
+		IfxEth_Phy_Pef7071_read_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_STAT, &value);
+
+	}
+
+   return value;
+}
 
 boolean IfxEth_Phy_Pef7071_link(void)
 {
