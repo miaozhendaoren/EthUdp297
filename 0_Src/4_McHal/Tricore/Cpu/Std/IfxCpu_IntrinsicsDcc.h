@@ -1,6 +1,6 @@
 /**
  * \file IfxCpu_IntrinsicsDcc.h
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -65,7 +65,6 @@ asm volatile void __jump_and_link(void (*fun)(void))
 #define __maxX(X,Y)                     ( ((X) > (Y)) ? (X) : (Y) )
 #define __saturateX(X,Min,Max)          ( __minX(__maxX(X, Min), Max) )
 #define __checkrangeX(X,Min,Max)        (((X) >= (Min)) && ((X) <= (Max)))
-
 
 /** Return minimum of two integers
  */
@@ -1325,6 +1324,38 @@ asm volatile void __stopPerfCounters(void)
     isync
 }
 
+/** \brief Convert a fixpoint value to float32
+ *
+ * This function converts a value from a fixpoint format to a float32 format.
+ *
+ *
+ * \param value value to be converted.
+ * \param shift position of the fix point. Range = [-256, 255] => (Qx.y format where x = shift+1).
+ *
+ * \return Returns the converted value in the float32 format.
+ *
+ */
+asm float __fixpoint_to_float32(fract value, sint32 shift)
+{
+% reg value, shift
+! "%d2"
+    q31tof %d2, value, shift
+}
+
+#define IFX_ALIGN(n)       __attribute__ ((aligned(n)))
+
+asm volatile void* __getA11(void)
+{
+! "%a11", "%a2"
+	mov.aa %a2, %a11
+}
+
+asm void __setStackPointer(void *stackAddr)
+{
+% reg stackAddr
+! "%a10"
+	mov.aa %a10, stackAddr
+}
 /* *INDENT-ON* */
 
 /******************************************************************************/

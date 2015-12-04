@@ -3,7 +3,7 @@
  * \brief DMA  basic functionality
  * \ingroup IfxLld_Dma
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -51,7 +51,12 @@
 /******************************************************************************/
 
 #include "_Impl/IfxDma_cfg.h"
-#include "IfxDma_bf.h"
+#include "_Reg/IfxDma_bf.h"
+#include "Cpu/Std/IfxCpu_Intrinsics.h"
+#include "_Reg/IfxDma_reg.h"
+#include "Src/Std/IfxSrc.h"
+#include "Scu/Std/IfxScuWdt.h"
+#include "Scu/Std/IfxScuCcu.h"
 
 /******************************************************************************/
 /*--------------------------------Enumerations--------------------------------*/
@@ -217,7 +222,7 @@ typedef enum
  */
 typedef enum
 {
-    IfxDma_ChannelIncrementCircular_none  = -1,  /**< \brief no circular buffer operation */
+    IfxDma_ChannelIncrementCircular_none  = 0,   /**< \brief no circular buffer operation */
     IfxDma_ChannelIncrementCircular_1     = 0,   /**< \brief circular buffer size is 1 byte */
     IfxDma_ChannelIncrementCircular_2     = 1,   /**< \brief circular buffer size is 2 byte */
     IfxDma_ChannelIncrementCircular_4     = 2,   /**< \brief circular buffer size is 4 byte */
@@ -260,7 +265,8 @@ typedef enum
     IfxDma_ChannelIncrementStep_128 = 7  /**< \brief increment by 128 width */
 } IfxDma_ChannelIncrementStep;
 
-/** \brief Interrupt generation mechanism
+/** \brief Channel Transfer Interrupt generation mechanism.
+ * Definition in Ifx_DMA.CH[64].ADICR.B.INTCT (bit 0)
  */
 typedef enum
 {
@@ -382,6 +388,15 @@ typedef enum
     IfxDma_MoveEngine_0 = 0,  /**< \brief first move engine */
     IfxDma_MoveEngine_1 = 1   /**< \brief second move engine */
 } IfxDma_MoveEngine;
+
+/** \brief Enable/disable the sensitivity of the module to sleep signal\n
+ * Definition in Ifx_DMA.CLC.B.EDIS
+ */
+typedef enum
+{
+    IfxDma_SleepMode_enable  = 0, /**< \brief enables sleep mode */
+    IfxDma_SleepMode_disable = 1  /**< \brief disables sleep mode */
+} IfxDma_SleepMode;
 
 /** \} */
 
@@ -539,6 +554,12 @@ IFX_INLINE void IfxDma_enableChannelTransactionLostError(Ifx_DMA *dma, IfxDma_Ch
  */
 IFX_INLINE boolean IfxDma_getChannelTransactionRequestLost(Ifx_DMA *dma, IfxDma_ChannelId channelId);
 
+/** \brief Converts DMA circular range to circular code
+ * \param range DMA circular range
+ * \return DMA circular code
+ */
+IFX_INLINE IfxDma_ChannelIncrementCircular IfxDma_getCircularRangeCode(uint16 range);
+
 /** \brief Return the hardware transaction request status of a DMA channel
  * \param dma pointer to DMA module
  * \param channelId DMA channel number
@@ -566,6 +587,13 @@ IFX_INLINE boolean IfxDma_isChannelTransactionEnabled(Ifx_DMA *dma, IfxDma_Chann
  */
 IFX_INLINE boolean IfxDma_isChannelTransactionPending(Ifx_DMA *dma, IfxDma_ChannelId channelId);
 
+/** \brief Sets the sensitivity of the module to sleep signal
+ * \param dma pointer to DMA registers
+ * \param mode mode selection (enable/disable)
+ * \return None
+ */
+IFX_INLINE void IfxDma_setSleepMode(Ifx_DMA *dma, IfxDma_SleepMode mode);
+
 /** \brief Request a DMA channel transaction
  * \param dma pointer to DMA module
  * \param channelId DMA channel number
@@ -575,12 +603,6 @@ IFX_INLINE boolean IfxDma_isChannelTransactionPending(Ifx_DMA *dma, IfxDma_Chann
  *
  */
 IFX_INLINE void IfxDma_startChannelTransaction(Ifx_DMA *dma, IfxDma_ChannelId channelId);
-
-/** \brief Converts DMA circular range to circular code
- * \param range DMA circular range
- * \return DMA circular code
- */
-IFX_INLINE IfxDma_ChannelIncrementCircular IfxDma_getCircularRangeCode(uint16 range);
 
 /** \} */
 
@@ -1101,7 +1123,7 @@ IFX_INLINE void IfxDma_switchDoubleBuffer(Ifx_DMA *dma, IfxDma_ChannelId channel
 /*-------------------------Inline Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief Clear a channel interrupt flag
+/** \brief Clear a channel transfer interrupt flag
  * \param dma pointer to DMA module
  * \param channelId channel for which the interrupt flag should be cleared
  * \return None
@@ -1135,7 +1157,7 @@ IFX_INLINE void IfxDma_disableChannelInterrupt(Ifx_DMA *dma, IfxDma_ChannelId ch
  */
 IFX_INLINE void IfxDma_enableChannelInterrupt(Ifx_DMA *dma, IfxDma_ChannelId channelId);
 
-/** \brief Return and clear a channel interrupt flag
+/** \brief Return and clear a channel transfer interrupt flag
  * The flag is automatically cleared with the call to this function
  * \param dma pointer to DMA module
  * \param channelId DMA channel number
@@ -1204,7 +1226,7 @@ IFX_INLINE boolean IfxDma_getAndClearChannelWrapDestinationBufferInterrupt(Ifx_D
  */
 IFX_INLINE boolean IfxDma_getAndClearChannelWrapSourceBufferInterrupt(Ifx_DMA *dma, IfxDma_ChannelId channelId);
 
-/** \brief Return a channel interrupt flag
+/** \brief Return a channel transfer interrupt flag
  * \param dma pointer to DMA module
  * \param channelId channel for which the interrupt flag should be returned
  * \return TRUE if the interrupt flag is set
@@ -1310,6 +1332,12 @@ IFX_INLINE boolean IfxDma_getChannelTransactionRequestLost(Ifx_DMA *dma, IfxDma_
 }
 
 
+IFX_INLINE IfxDma_ChannelIncrementCircular IfxDma_getCircularRangeCode(uint16 range)
+{
+    return (IfxDma_ChannelIncrementCircular)(31 - __clz((uint32)range));
+}
+
+
 IFX_INLINE boolean IfxDma_isChannelTransactionEnabled(Ifx_DMA *dma, IfxDma_ChannelId channelId)
 {
     return dma->TSR[channelId].B.HTRE != 0;
@@ -1322,15 +1350,18 @@ IFX_INLINE boolean IfxDma_isChannelTransactionPending(Ifx_DMA *dma, IfxDma_Chann
 }
 
 
-IFX_INLINE void IfxDma_startChannelTransaction(Ifx_DMA *dma, IfxDma_ChannelId channelId)
+IFX_INLINE void IfxDma_setSleepMode(Ifx_DMA *dma, IfxDma_SleepMode mode)
 {
-    dma->CH[channelId].CHCSR.B.SCH = 1;
+    uint16 passwd = IfxScuWdt_getCpuWatchdogPassword();
+    IfxScuWdt_clearCpuEndinit(passwd);
+    dma->CLC.B.EDIS = mode;
+    IfxScuWdt_setCpuEndinit(passwd);
 }
 
 
-IFX_INLINE IfxDma_ChannelIncrementCircular IfxDma_getCircularRangeCode(uint16 range)
+IFX_INLINE void IfxDma_startChannelTransaction(Ifx_DMA *dma, IfxDma_ChannelId channelId)
 {
-    return (IfxDma_ChannelIncrementCircular)(31 - __clz((uint32)range));
+    dma->CH[channelId].CHCSR.B.SCH = 1;
 }
 
 
@@ -1590,13 +1621,13 @@ IFX_INLINE void IfxDma_clearChannelInterrupt(Ifx_DMA *dma, IfxDma_ChannelId chan
 
 IFX_INLINE void IfxDma_disableChannelInterrupt(Ifx_DMA *dma, IfxDma_ChannelId channelId)
 {
-    dma->CH[channelId].ADICR.B.INTCT &= ~(1 << 0);   // TODO: should we define a special bitmask for this bit manipulation?
+    dma->CH[channelId].ADICR.B.INTCT &= ~(1 << 1);   // TODO: should we define a special bitmask for this bit manipulation?
 }
 
 
 IFX_INLINE void IfxDma_enableChannelInterrupt(Ifx_DMA *dma, IfxDma_ChannelId channelId)
 {
-    dma->CH[channelId].ADICR.B.INTCT |= (1 << 0);   // TODO: should we define a special bitmask for this bit manipulation?
+    dma->CH[channelId].ADICR.B.INTCT |= (1 << 1);   // TODO: should we define a special bitmask for this bit manipulation?
 }
 
 

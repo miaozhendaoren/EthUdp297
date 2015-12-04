@@ -3,7 +3,7 @@
  * \brief This file contains the Core startup sequence.
  *
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -64,7 +64,7 @@ void _Core2_start(void);
 /*Documentation */
 
 /** \addtogroup IfxLld_Cpu_CStart_StartupSequence
- * \{ 
+ * \{
  *
  * The startup driver is responsible for initializing the basic features of microcontroller
  * to bring it up to the user functions. In framework these functions are called as "CoreX_main".
@@ -155,19 +155,18 @@ void _Core2_start(void);
 /** \} */
 
 /** \addtogroup IfxLld_Cpu_CStart_ConfigEnableCache
- * \{ 
+ * \{
  *
  * In Tricore Cpu the cache enable/ disable are handled by the feature called cache bypass.
  * Cache is enabled if the Bypass is disabled.
  *
- * Startup sequence of each CPU execute the function to do the cache settings. \ref IfxLld_Cpu_CStart_StartupSequence
+ * Startup sequence of each CPU execute the function to do the cache settings. \ref Ifx_Cpu_StartupSequence
  * The configuration parameters IFX_CFG_CPU_CSTART_ENABLE_TRICOREx_PCACHE and
  * IFX_CFG_CPU_CSTART_ENABLE_TRICOREx_DCACHE control this function.
  *
- * To modify the default configuration, these macros are to be defined. create a file to define these macros.
- * For example, Ifx_Cfg_CStart.h at ../0_Src/0_AppSw/Config/Tricore (or in DemoApp folder)
- * \note This kind of definitions, overload the macros, which are already defined in IfxCpu_CStart.h.
- * !!IMPORTANT!! Don't modify these at IfxCpu_CStart.h, because this is library file.
+ * To modify the default configuration, these macros are to be defined in Ifx_Cfg.h (usually located under ../0_Src/0_AppSw/Config/Common/Ifx_Cfg.h)
+ * \note This kind of definitions overload the macros, which are already defined in IfxCpu_CStart*.c.
+ * !!IMPORTANT!! Don't modify these in IfxCpu_CStart*.c, because theseare library files.
  *
  * Details of configuration parameters:\n
  *
@@ -194,23 +193,23 @@ void _Core2_start(void);
  * Following example shows, how to enable program cache of all available cores and disable data cache of all
  * the available cores.
  * \code
- * //file: Ifx_Cfg_CStart.h
+ * //file: Ifx_Cfg.h
  *
  * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_PCACHE  (1)   //Program cache for Cpu0 is enabled
  *
- * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_DCACHE  (0)   //Data cache for Cpu0 is disabled
+ * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_DCACHE  (1)   //Data cache for Cpu0 is enabled
  *
  * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE1_PCACHE  (1)   //Program cache for Cpu1 is enabled
  *
- * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE1_DCACHE  (0)   //Data cache for Cpu1 is disabled
+ * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE1_DCACHE  (1)   //Data cache for Cpu1 is enabled
  *
  * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE2_PCACHE  (1)   //Program cache for Cpu2 is enabled
  *
- * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE2_DCACHE  (0)   //Data cache for Cpu2 is disabled
+ * #define IFX_CFG_CPU_CSTART_ENABLE_TRICORE2_DCACHE  (1)   //Data cache for Cpu2 is enabled
  *
  * \endcode
  *
- * To control the the caches during runtime, refer for the details of APIs: \ref IfxLld_Cpu_CStart_ConfigEnableCache
+ * To control the the caches during runtime, refer for the details of APIs: \ref Ifx_Cpu_Cache
  *
  */
 

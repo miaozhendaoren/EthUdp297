@@ -3,7 +3,7 @@
  * \brief Stm on-chip implementation data 
  * \ingroup IfxLld_Stm 
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -37,10 +37,7 @@
 /******************************************************************************/
 
 #include "Cpu/Std/IfxCpu_Intrinsics.h"
-#include "Ifx_Cfg.h"
 #include "_Reg/IfxStm_reg.h"
-#include "Scu/Std/IfxScuCcu.h"
-#include "Src/Std/IfxSrc.h"
 
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
@@ -48,7 +45,7 @@
 
 /** \brief STM count 
  */
-#define IFXSTM_COUNT 3
+#define IFXSTM_NUM_MODULES 3
                 
 
 
@@ -77,7 +74,7 @@ typedef enum
 /*-------------------Global Exported Variables/Constants----------------------*/
 /******************************************************************************/
 
-IFX_EXTERN const IfxModule_IndexMap IfxStm_cfg_indexMap[IFXSTM_COUNT];
+IFX_EXTERN const IfxModule_IndexMap IfxStm_cfg_indexMap[IFXSTM_NUM_MODULES];
 
 
 /** \} */  

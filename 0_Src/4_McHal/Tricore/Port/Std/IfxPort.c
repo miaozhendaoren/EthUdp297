@@ -2,7 +2,7 @@
  * \file IfxPort.c
  * \brief PORT  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -27,8 +27,6 @@
 /******************************************************************************/
 
 #include "IfxPort.h"
-#include "Cpu/Std/IfxCpu.h"
-#include "Scu/Std/IfxScuWdt.h"
 
 /******************************************************************************/
 /*-------------------------Function Implementations---------------------------*/
@@ -39,7 +37,7 @@ boolean IfxPort_disableEmergencyStop(Ifx_P *port, uint8 pinIndex)
     sint32  portIndex;
     boolean result = FALSE;
 
-    for (portIndex = 0; portIndex < IFXPORT_COUNT; portIndex++)
+    for (portIndex = 0; portIndex < IFXPORT_NUM_MODULES; portIndex++)
     {
         if (port == IfxPort_cfg_esrMasks[portIndex].port)
         {
@@ -62,7 +60,7 @@ boolean IfxPort_enableEmergencyStop(Ifx_P *port, uint8 pinIndex)
     sint32  portIndex;
     boolean result = FALSE;
 
-    for (portIndex = 0; portIndex < IFXPORT_COUNT; portIndex++)
+    for (portIndex = 0; portIndex < IFXPORT_NUM_MODULES; portIndex++)
     {
         if (port == IfxPort_cfg_esrMasks[portIndex].port)
         {
@@ -82,7 +80,7 @@ sint32 IfxPort_getIndex(Ifx_P *port)
 {
     sint32 result = -1, index;
 
-    for (index = 0; index < IFXPORT_COUNT; index++)
+    for (index = 0; index < IFXPORT_NUM_MODULES; index++)
     {
         if (IfxPort_cfg_indexMap[index].module == port)
         {
@@ -256,5 +254,53 @@ void IfxPort_setPinPadDriver(Ifx_P *port, uint8 pinIndex, IfxPort_PadDriver padD
         uint8            shift    = (pinIndex & 0x7U) * 4;
         __ldmst(&(pdr[pdrIndex]), (0xFUL << shift), (padDriver << shift));
     }
+    IfxScuWdt_setCpuEndinit(passwd);
+}
+
+
+void IfxPort_setPinModeLvdsMedium(Ifx_P *port, uint8 pinIndex, IfxPort_PadDriver lvdsPadDriver, IfxPort_PadSupply padSupply)
+{
+    uint32                pdrOffset  = (pinIndex / 8);
+    uint32                shift      = ((pinIndex / 2) * 8);
+    uint32                lpcrOffset = (pinIndex / 2);
+    volatile Ifx_P_PDR0  *pdr        = &(port->PDR0);
+    volatile Ifx_P_LPCR0 *lpcr       = &(port->LPCR0);
+    uint16                passwd     = IfxScuWdt_getCpuWatchdogPassword();
+
+    IfxScuWdt_clearCpuEndinit(passwd);
+    {
+        pdr[pdrOffset].U       = (lvdsPadDriver << shift); /* configuring LVDS mode */
+        lpcr[lpcrOffset].B.PS1 = padSupply;
+    }
+    IfxScuWdt_setCpuEndinit(passwd);
+}
+
+
+void IfxPort_setPinModeLvdsHigh(Ifx_P *port, uint8 pinIndex, IfxPort_Mode mode, IfxPort_ControlledBy enablePortControlled)
+{
+    uint16 passwd = IfxScuWdt_getCpuWatchdogPassword();
+
+    IfxScuWdt_clearCpuEndinit(passwd);
+
+    if (mode < IfxPort_Mode_outputPushPullGeneral)
+    {
+        if (pinIndex < 2)
+        {
+            port->LPCR0.B_P21.RDIS_CTRL = enablePortControlled;
+            port->LPCR0.B_P21.RX_DIS    = 0;
+        }
+        else
+        {
+            port->LPCR1.B_P21.RDIS_CTRL = enablePortControlled;
+            port->LPCR1.B_P21.RX_DIS    = 0;
+        }
+    }
+    else
+    {
+        port->LPCR2.B_P21.TDIS_CTRL = enablePortControlled;
+        port->LPCR2.B_P21.TX_DIS    = 0;
+        port->LPCR2.B_P21.TX_PD     = 0;
+    }
+
     IfxScuWdt_setCpuEndinit(passwd);
 }

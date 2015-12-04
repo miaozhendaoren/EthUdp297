@@ -3,7 +3,7 @@
  * \brief SCU on-chip implementation data
  * \ingroup IfxLld_Scu
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -34,7 +34,7 @@
 /*                           Macro                                            */
 /******************************************************************************/
 #ifndef IFX_CFG_SCU_XTAL_FREQUENCY
-#    define IFX_CFG_SCU_XTAL_FREQUENCY    20000000  /**< \brief Default External oscillator frequency */
+#    define IFX_CFG_SCU_XTAL_FREQUENCY   20000000   /**< \brief Default External oscillator frequency */
 #    warning "IFX_CFG_SCU_XTAL_FREQUENCY not specified in your IfxCfg.h file."
 #    warning "Please doublecheck the external XTAL frequency with the default setting of 20 MHz!"
 #endif
@@ -45,7 +45,6 @@
 
 #define IFXSCU_VCO_BASE_FREQUENCY        (100000000.0)
 #define IFXSCU_EVR_OSC_FREQUENCY         (100000000.0)
-#define IFX_CFG_STM_TICKS_PER_MS	    (IFX_CFG_SCU_PLL_FREQUENCY / 2 / 1000)
 
 /*The following frequency is the PLL free running frequency */
 /* FIXME is this not redundant to IFXSCU_VCO_BASE_FREQUENCY */
@@ -63,329 +62,329 @@
 #ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_80MHZ
 /** \brief Macro for Pll step for profile with 16MHz Crystal and 80MHz target */
 #define IFXSCU_CFG_PLL_STEPS_16MHZ_80MHZ                              \
-        {               /*Step 0 Config: 80MHz*/                      \
-            (8 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 80MHz*/                      \
+        (8 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_133MHZ
 /** \brief Macro for Pll step for profile with 16MHz Crystal and 133MHz target */
 #define IFXSCU_CFG_PLL_STEPS_16MHZ_133MHZ                             \
-        {               /*Step 0 Config: 114MHz*/                     \
-            (7 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 133MHz*/                     \
-            (6 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 114MHz*/                     \
+        (7 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 133MHz*/                     \
+        (6 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_160MHZ
 /** \brief Macro for Pll step for profile with 16MHz Crystal and 160MHz target */
 #define IFXSCU_CFG_PLL_STEPS_16MHZ_160MHZ                             \
-        {               /*Step 1 Config: 128MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 160MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 1 Config: 128MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 160MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_200MHZ
 /** \brief Macro for Pll step for profile with 16MHz Crystal and 200MHz target */
 #define IFXSCU_CFG_PLL_STEPS_16MHZ_200MHZ                             \
-        {               /*Step 0 Config: 120MHz*/                     \
-            (6 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 150MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 200MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 0 Config: 120MHz*/                     \
+        (6 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 150MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 200MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_240MHZ
 /** \brief Macro for Pll step for profile with 16MHz Crystal and 240MHz target */
 #define IFXSCU_CFG_PLL_STEPS_16MHZ_240MHZ                             \
-        {               /*Step 0 Config: 144MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 180MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 240MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }
+    {                   /*Step 0 Config: 144MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 180MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 240MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_16MHZ_240MHZ */
 
 /******************** Pll step 20MHz crystal Configurations ********************************/
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_80MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 80MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_80MHZ                              \
-        {               /*Step 0 Config: 80MHz*/                      \
-            (8 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 80MHz*/                      \
+        (8 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_133MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 133MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_133MHZ                             \
-        {               /*Step 0 Config: 114MHz*/                     \
-            (7 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 133MHz*/                     \
-            (6 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 114MHz*/                     \
+        (7 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 133MHz*/                     \
+        (6 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_160MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 160MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_160MHZ                             \
-        {               /*Step 1 Config: 128MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 160MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 1 Config: 128MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 160MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_200MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 200MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_200MHZ                             \
-        {               /*Step 0 Config: 120MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 150MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 200MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 0 Config: 120MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 150MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 200MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_240MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 240MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_240MHZ                             \
-        {               /*Step 0 Config: 144MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 180MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 240MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }
+    {                   /*Step 0 Config: 144MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 180MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 240MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_240MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_300MHZ
 /** \brief Macro for Pll step for profile with 20MHz Crystal and 300MHz target */
 #define IFXSCU_CFG_PLL_STEPS_20MHZ_300MHZ                             \
-        {               /*Step 0 Config: 150MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 200MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 300MHz*/                     \
-            (2 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }
+    {                   /*Step 0 Config: 150MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 200MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 300MHz*/                     \
+        (2 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_20MHZ_300MHZ */
 
 /******************** Pll step for 40MHz crystal Configurations ********************************/
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_80MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 80MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_80MHZ                              \
-        {               /*Step 0 Config: 80MHz*/                      \
-            (8 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 80MHz*/                      \
+        (8 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_133MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 133MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_133MHZ                             \
-        {               /*Step 0 Config: 114MHz*/                     \
-            (7 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 133MHz*/                     \
-            (6 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+    {                   /*Step 0 Config: 114MHz*/                     \
+        (7 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 133MHz*/                     \
+        (6 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_160MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 160MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_160MHZ                             \
-        {               /*Step 1 Config: 128MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 160MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 1 Config: 128MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 160MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_200MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 200MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_200MHZ                             \
-        {               /*Step 0 Config: 120MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 150MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 200MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }                                                             
+    {                   /*Step 0 Config: 120MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 150MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 200MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_240MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 240MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_240MHZ                             \
-        {               /*Step 0 Config: 144MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 180MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 240MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }
+    {                   /*Step 0 Config: 144MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 180MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 240MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_240MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_300MHZ
 /** \brief Macro for Pll step for profile with 40MHz Crystal and 300MHz target */
 #define IFXSCU_CFG_PLL_STEPS_40MHZ_300MHZ                             \
-        {               /*Step 0 Config: 150MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 200MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 2 Config: 300MHz*/                     \
-            (2 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        }
+    {                   /*Step 0 Config: 150MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 200MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 2 Config: 300MHz*/                     \
+        (2 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    }
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_40MHZ_300MHZ */
 
 /******************** Pll step for 8MHz crystal Configurations ********************************/
 #ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_80MHZ
 /** \brief Macro for Pll step for profile with 8MHz Crystal and 80MHz target */
-#define IFXSCU_CFG_PLL_STEPS_8MHZ_80MHZ                              \
-        {               /*Step 0 Config: 80MHz*/                      \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            
+#define IFXSCU_CFG_PLL_STEPS_8MHZ_80MHZ                               \
+    {                   /*Step 0 Config: 80MHz*/                      \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_160MHZ
 /** \brief Macro for Pll step for profile with 8MHz Crystal and 160MHz target */
-#define IFXSCU_CFG_PLL_STEPS_8MHZ_160MHZ                             \
-        {               /*Step 0 Config: 100MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 160MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },
+#define IFXSCU_CFG_PLL_STEPS_8MHZ_160MHZ                              \
+    {                   /*Step 0 Config: 100MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 160MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_200MHZ
 /** \brief Macro for Pll step for profile with 8MHz Crystal and 200MHz target */
-#define IFXSCU_CFG_PLL_STEPS_8MHZ_200MHZ                             \
-        {               /*Step 0 Config: 120MHz*/                     \
-            (5 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 0 Config: 150MHz*/                     \
-            (4 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },                                                            \
-        {               /*Step 1 Config: 200MHz*/                     \
-            (3 - 1),    /*uint8 k2Step;*/                             \
-            0.000100,   /*float32 waitTime;*/                         \
-            0           /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
-        },
+#define IFXSCU_CFG_PLL_STEPS_8MHZ_200MHZ                              \
+    {                   /*Step 0 Config: 120MHz*/                     \
+        (5 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 0 Config: 150MHz*/                     \
+        (4 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },                                                                \
+    {                   /*Step 1 Config: 200MHz*/                     \
+        (3 - 1),        /*uint8 k2Step;*/                             \
+        0.000100,       /*float32 waitTime;*/                         \
+        0               /*IfxScu_PllStepsFunctionHook hookFunction;*/ \
+    },
 #endif /*#ifndef IFXSCU_CFG_PLL_STEPS_8MHZ_200MHZ */
 
 /** \brief Macros to configure Initial Pll step.
@@ -398,36 +397,36 @@
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_80MHZ
 /** \brief Macro for Initial Pll step, for profile with 16MHz Crystal and 80MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_80MHZ                                 \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_80MHZ                           \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (40 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_133MHZ
 /** \brief Macro for Initial Pll step, for profile with 16MHz Crystal and 133MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_133MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_133MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (50 - 1), (8 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_160MHZ
 /** \brief Macro for Initial Pll step, for profile with 16MHz Crystal and 160MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_160MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_160MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (40 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_200MHZ
 /** \brief Macro for Initial Pll step, for profile with 16MHz Crystal and 200MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_200MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_200MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (50 - 1), (8 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_240MHZ
 /** \brief Macro for Initial Pll step, for profile with 16MHz Crystal and 240MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_240MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_240MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (45 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_16MHZ_240MHZ */
 
@@ -435,43 +434,43 @@
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_80MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 80MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_80MHZ                                 \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_80MHZ                           \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (64 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_133MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 133MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_133MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_133MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (80 - 1), (8 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_160MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 160MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_160MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_160MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (64 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_200MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 200MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_200MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_200MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (60 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_240MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 240MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_240MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_240MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (72 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_240MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_300MHZ
 /** \brief Macro for Initial Pll step, for profile with 20MHz Crystal and 300MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_300MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_300MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(2 - 1), (60 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_20MHZ_300MHZ */
 
@@ -479,70 +478,68 @@
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_80MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 80MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_80MHZ                                 \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_80MHZ                           \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (64 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_133MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 133MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_133MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_133MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (80 - 1), (8 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_133MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_160MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 160MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_160MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_160MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (64 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_200MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 200MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_200MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_200MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (60 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_200MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_240MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 240MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_240MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_240MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (72 - 1), (7 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_240MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_300MHZ
 /** \brief Macro for Initial Pll step, for profile with 40MHz Crystal and 300MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_300MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_300MHZ                          \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(4 - 1), (60 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_40MHZ_300MHZ */
-
 
 /****************** Initial Pll step for 8MHz crystal Configurations ******************************/
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_80MHZ
 /** \brief Macro for Initial Pll step, for profile with 8MHz Crystal and 80MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_80MHZ                                 \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}  ??*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_80MHZ                                \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}  ??*/\
     {(1 - 1), (50 - 1), (5 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_80MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_160MHZ
 /** \brief Macro for Initial Pll step, for profile with 8MHz Crystal and 160MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_160MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_160MHZ                           \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (60 - 1), (5 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_160MHZ */
 
 #ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_200MHZ
 /** \brief Macro for Initial Pll step, for profile with 8MHz Crystal and 200MHz target */
-#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_200MHZ                                \
-/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/		\
+#define IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_200MHZ                           \
+/*{	uint8 pDivider, uint8 nDivider, uint8 k2Initial, float32 waitTime	}*/\
     {(1 - 1), (75 - 1), (6 - 1), 0.000200F}
 #endif /*#ifndef IFXSCU_CFG_PLL_INITIAL_STEP_8MHZ_200MHZ */
-
 
 /** \brief Macros to configure CCUCON registers.
  *  Macros to configure the Pll initial step, where the configuration of PDIV, NDIV and K2DIV are
@@ -1092,154 +1089,148 @@
 #define IFXSCU_CFG_CPU2DIV_300MHZ    (0)    /*Same as SRIDIV */
 #endif /*#ifndef IFXSCU_CFG_CPU2DIV_300MHZ */
 
-
-
 /** \brief Macros to configure FLASH.FCON register for flash waitstate configuration.
  *  \ref IfxScuCcu_InitialStepConfig
  */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_80MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 80MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_80MHZ (3-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_80MHZ  (3 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_80MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_133MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 133MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_133MHZ (4-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_133MHZ (4 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_133MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_160MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 160MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_160MHZ (5-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_160MHZ (5 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_160MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_200MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 200MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_200MHZ (6-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_200MHZ (6 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_200MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_240MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 240MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_240MHZ (8-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_240MHZ (8 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_240MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_300MHZ
 /** \brief Macro to configure FCON.WSPFLASH at 300MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_300MHZ (9-1)
+#define IFXSCU_CFG_FLASH_FCON_WSPFLASH_300MHZ (9 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSPFLASH_300MHZ */
-
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_80MHZ
 /** \brief Macro to configure FCON.WSECP_ at 80MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_80MHZ (1-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_80MHZ    (1 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_80MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_133MHZ
 /** \brief Macro to configure FCON.WSECPF at 133MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_133MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_133MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_133MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_160MHZ
 /** \brief Macro to configure FCON.WSECPF at 160MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_160MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_160MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_160MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_200MHZ
 /** \brief Macro to configure FCON.WSECPF at 200MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_200MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_200MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_200MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_240MHZ
 /** \brief Macro to configure FCON.WSECPF_ at 240MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_240MHZ (3-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_240MHZ   (3 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_240MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_300MHZ
 /** \brief Macro to configure FCON.WSECPF at 300MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECPF_300MHZ (3-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECPF_300MHZ   (3 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECPF_300MHZ */
-
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_80MHZ
 /** \brief Macro to configure FCON.WSDFLASH at 80MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_80MHZ (16-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_80MHZ  (16 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_80MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_133MHZ
 /** \brief Macro to configure FCON.WSDFLASH_ at 133MHz target frequency, where fSRI= 133/2= 66.5MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_133MHZ (14-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_133MHZ (14 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_133MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_160MHZ
 /** \brief Macro to configure FCON.WSDFLASH at 160MHz target frequency, where fSRI= 160/2= 80MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_160MHZ (16-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_160MHZ (16 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_160MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_200MHZ
 /** \brief Macro to configure FCON.WSDFLASH at 200MHz target frequency, where fSRI= 200/2= 100MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_200MHZ (20-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_200MHZ (20 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_200MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_240MHZ
 /** \brief Macro to configure FCON.WSDFLASH at 240MHz target frequency, where fSRI= 240/3= 80MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_240MHZ (16-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_240MHZ (16 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_240MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_300MHZ
 /** \brief Macro to configure FCON.WSDFLASH at 300MHz target frequency, where fSRI= 300/3= 100MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_300MHZ (20-1)
+#define IFXSCU_CFG_FLASH_FCON_WSDFLASH_300MHZ (20 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSDFLASH_300MHZ */
-
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_80MHZ
 /** \brief Macro to configure FCON.WSECDF at 80MHz target frequency */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_80MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_80MHZ    (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_80MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_133MHZ
 /** \brief Macro to configure FCON.WSECDF at 133MHz target frequency, where fSRI= 133/2= 66.5MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_133MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_133MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_133MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_160MHZ
 /** \brief Macro to configure FCON.WSECDF at 160MHz target frequency, where fSRI= 160/2= 80MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_160MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_160MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_160MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_200MHZ
 /** \brief Macro to configure FCON.WSECDF at 200MHz target frequency, where fSRI= 200/2= 100MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_200MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_200MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_200MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_240MHZ
 /** \brief Macro to configure FCON.WSECDF at 240MHz target frequency, where fSRI= 240/3= 80MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_240MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_240MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_240MHZ */
 
 #ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_300MHZ
 /** \brief Macro to configure FCON.WSECDF at 300MHz target frequency, where fSRI= 300/3= 100MHZ */
-#define IFXSCU_CFG_FLASH_FCON_WSECDF_300MHZ (2-1)
+#define IFXSCU_CFG_FLASH_FCON_WSECDF_300MHZ   (2 - 1)
 #endif /*#ifndef IFXSCU_CFG_FLASH_FCON_WSECDF_300MHZ */
 
 /** \brief Macros to configure FLASH.FCON registers */
-#define IFXSCU_CFG_FLASH_WAITSTATE_MSK									\
-	(  																	\
-		(IFX_FLASH_FCON_WSPFLASH_MSK << IFX_FLASH_FCON_WSPFLASH_OFF) |	\
-		(IFX_FLASH_FCON_WSECPF_MSK << IFX_FLASH_FCON_WSECPF_OFF)	 |	\
-		(IFX_FLASH_FCON_WSDFLASH_MSK << IFX_FLASH_FCON_WSDFLASH_OFF) |	\
-		(IFX_FLASH_FCON_WSECDF_MSK << IFX_FLASH_FCON_WSECDF_OFF))
+#define IFXSCU_CFG_FLASH_WAITSTATE_MSK                                 \
+    (                                                                  \
+        (IFX_FLASH_FCON_WSPFLASH_MSK << IFX_FLASH_FCON_WSPFLASH_OFF) | \
+        (IFX_FLASH_FCON_WSECPF_MSK << IFX_FLASH_FCON_WSECPF_OFF) |     \
+        (IFX_FLASH_FCON_WSDFLASH_MSK << IFX_FLASH_FCON_WSDFLASH_OFF) | \
+        (IFX_FLASH_FCON_WSECDF_MSK << IFX_FLASH_FCON_WSECDF_OFF))
 
-#define IFXSCU_CFG_FLASH_WAITSTATE_VAL_BASIC_(pllFreq)							\
-	(  																			\
-		(IFXSCU_CFG_FLASH_FCON_WSPFLASH_##pllFreq << IFX_FLASH_FCON_WSPFLASH_OFF)|	\
-		(IFXSCU_CFG_FLASH_FCON_WSECPF_##pllFreq << IFX_FLASH_FCON_WSECPF_OFF)	 |	\
-		(IFXSCU_CFG_FLASH_FCON_WSDFLASH_##pllFreq << IFX_FLASH_FCON_WSDFLASH_OFF)|	\
-		(IFXSCU_CFG_FLASH_FCON_WSECDF_##pllFreq << IFX_FLASH_FCON_WSECDF_OFF))
+#define IFXSCU_CFG_FLASH_WAITSTATE_VAL_BASIC_(pllFreq)                              \
+    (                                                                               \
+        (IFXSCU_CFG_FLASH_FCON_WSPFLASH_##pllFreq << IFX_FLASH_FCON_WSPFLASH_OFF) | \
+        (IFXSCU_CFG_FLASH_FCON_WSECPF_##pllFreq << IFX_FLASH_FCON_WSECPF_OFF) |     \
+        (IFXSCU_CFG_FLASH_FCON_WSDFLASH_##pllFreq << IFX_FLASH_FCON_WSDFLASH_OFF) | \
+        (IFXSCU_CFG_FLASH_FCON_WSECDF_##pllFreq << IFX_FLASH_FCON_WSECDF_OFF))
 
 #define IFXSCU_CFG_FLASH_WAITSTATE_VAL_BASIC(pllFreq) IFXSCU_CFG_FLASH_WAITSTATE_VAL_BASIC_(pllFreq)
 
 #define IFXSCU_CFG_FLASH_WAITSTATE_VAL IFXSCU_CFG_FLASH_WAITSTATE_VAL_BASIC(IFXSCU_CFG_PLL_FREQ)
-
 
 /** \brief Macros to configure CCUCON0 Clock distribution */
 #define IFXSCU_CFG_CCUCON0_MASK                                          \
@@ -1278,7 +1269,7 @@
 #define IFXSCU_CFG_CCUCON1_BASIC_(pllFreq)                                    \
     (uint32)(                                                                 \
         (IFXSCU_CFG_CANDIV_##pllFreq << IFX_SCU_CCUCON1_CANDIV_OFF) |         \
-        (IFXSCU_CFG_ERAYDIV_##pllFreq << IFX_SCU_CCUCON1_ERAYDIV_OFF) |       \
+        (IFXSCU_CFG_ERAYDIV_80MHZ << IFX_SCU_CCUCON1_ERAYDIV_OFF) |           \
         (IFXSCU_CFG_STMDIV_##pllFreq << IFX_SCU_CCUCON1_STMDIV_OFF) |         \
         (IFXSCU_CFG_GTMDIV_##pllFreq << IFX_SCU_CCUCON1_GTMDIV_OFF) |         \
         (IFXSCU_CFG_ETHDIV_##pllFreq << IFX_SCU_CCUCON1_ETHDIV_OFF) |         \
@@ -1377,10 +1368,9 @@
 #define IFXSCU_CFG_PLL_INITIAL_STEP_BASIC(xtalFreq, pllFreq)  IFXSCU_CFG_PLL_INITIAL_STEP_BASIC_(xtalFreq, pllFreq)
 #define IFXSCU_CFG_PLL_INITIAL_STEP IFXSCU_CFG_PLL_INITIAL_STEP_BASIC(IFXSCU_CFG_XTAL_FREQ, IFXSCU_CFG_PLL_FREQ)
 
-#define IFXSCU_CFG_FLASH_WAITSTATE                                         \
-/*	{	uint32 value,			uint32 mask					}*/             \
+#define IFXSCU_CFG_FLASH_WAITSTATE       \
+/*	{	uint32 value,			uint32 mask					}*/\
     {IFXSCU_CFG_FLASH_WAITSTATE_VAL, IFXSCU_CFG_FLASH_WAITSTATE_MSK}
-
 
 #if (IFX_CFG_SCU_XTAL_FREQUENCY == (20000000))
 #define IFXSCU_CFG_XTAL_FREQ        20MHZ

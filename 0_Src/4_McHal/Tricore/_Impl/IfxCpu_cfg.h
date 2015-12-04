@@ -1,9 +1,9 @@
 /**
  * \file IfxCpu_cfg.h
- * \brief Cpu on-chip implementation data 
- * \ingroup IfxLld_Cpu 
+ * \brief Cpu on-chip implementation data
+ * \ingroup IfxLld_Cpu
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -37,59 +37,55 @@
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
 
-/** \brief CPU count 
+/** \brief CPU count
  */
-#define IFXCPU_COUNT (3)
-                
-/** \brief Segment number of cachable flash region 
+#define IFXCPU_NUM_MODULES            (3)
+
+/** \brief Segment number of cachable flash region
  */
 #define IFXCPU_CACHABLE_FLASH_SEGMENT (8)
-                
-/** \brief Segment number of cachable LMU region 
- */
-#define IFXCPU_CACHABLE_LMU_SEGMENT (9)
-                
 
+/** \brief Segment number of cachable LMU region
+ */
+#define IFXCPU_CACHABLE_LMU_SEGMENT   (9)
 
 /******************************************************************************/
 /*-------------------------------Enumerations---------------------------------*/
 /******************************************************************************/
 
-/** \brief Halt status  
+/** \brief Halt status
  */
 typedef enum
 {
-    IfxCpu_DBGST_HALT_run = 0,  
-    IfxCpu_DBGST_HALT_halt = 1  
+    IfxCpu_DBGST_HALT_run  = 0,
+    IfxCpu_DBGST_HALT_halt = 1
 } IfxCpu_DBGST_HALT;
 
-/** \brief Power management status  
+/** \brief Power management status
  */
 typedef enum
 {
-    IfxCpu_PMCSR_PMST_normalMode = 1,         
-    IfxCpu_PMCSR_PMST_idleModeRequest = 2,    
-    IfxCpu_PMCSR_PMST_idleMode = 3,           
-    IfxCpu_PMCSR_PMST_sleepModeRequest = 4,   
-    IfxCpu_PMCSR_PMST_standbyModeRequest = 6  
+    IfxCpu_PMCSR_PMST_normalMode         = 1,
+    IfxCpu_PMCSR_PMST_idleModeRequest    = 2,
+    IfxCpu_PMCSR_PMST_idleMode           = 3,
+    IfxCpu_PMCSR_PMST_sleepModeRequest   = 4,
+    IfxCpu_PMCSR_PMST_standbyModeRequest = 6
 } IfxCpu_PMCSR_PMST;
 
-/** \brief List of the available CPU resources  
+/** \brief List of the available CPU resources
  */
 typedef enum
 {
     IfxCpu_ResourceCpu_0 = 0,  /**< \brief CPU 0 */
-    IfxCpu_ResourceCpu_1,      /**< \brief CPU 1 */
-    IfxCpu_ResourceCpu_2,      /**< \brief CPU 2 */
+    IfxCpu_ResourceCpu_1 = 1,  /**< \brief CPU 1 */
+    IfxCpu_ResourceCpu_2 = 2,  /**< \brief CPU 2 */
     IfxCpu_ResourceCpu_none    /**< \brief None of the CPU */
 } IfxCpu_ResourceCpu;
-
 
 /******************************************************************************/
 /*-------------------Global Exported Variables/Constants----------------------*/
 /******************************************************************************/
 
-IFX_EXTERN const IfxModule_IndexMap IfxCpu_cfg_indexMap[IFXCPU_COUNT];
-
+IFX_EXTERN const IfxModule_IndexMap IfxCpu_cfg_indexMap[IFXCPU_NUM_MODULES];
 
 #endif /* IFXCPU_CFG_H */

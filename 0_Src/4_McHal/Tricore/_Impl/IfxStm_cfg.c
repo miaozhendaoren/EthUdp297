@@ -2,7 +2,7 @@
  * \file IfxStm_cfg.c
  * \brief Stm on-chip implementation data
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -32,7 +32,7 @@
 /*-----------------------Exported Variables/Constants-------------------------*/
 /******************************************************************************/
 
-const IfxModule_IndexMap IfxStm_cfg_indexMap[IFXSTM_COUNT] = {
+const IfxModule_IndexMap IfxStm_cfg_indexMap[IFXSTM_NUM_MODULES] = {
     {&MODULE_STM0, IfxStm_ResourceStm_0},
     {&MODULE_STM1, IfxStm_ResourceStm_1},
     {&MODULE_STM2, IfxStm_ResourceStm_2}

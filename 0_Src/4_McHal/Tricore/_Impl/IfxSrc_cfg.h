@@ -3,7 +3,7 @@
  * \brief Src on-chip implementation data 
  * \ingroup IfxLld_Src 
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -34,9 +34,6 @@
 /*----------------------------------Includes----------------------------------*/
 /******************************************************************************/
 
-#include "Cpu/Std/IfxCpu_Intrinsics.h"
-#include "_Reg/IfxSrc_reg.h"
-#include "Ifx_Cfg.h"
 
 
 /******************************************************************************/
@@ -52,7 +49,7 @@ typedef enum
     IfxSrc_Tos_cpu0 = 0,  /**< \brief CPU0 interrupt service provider, which handles the interrupt service request. */
     IfxSrc_Tos_cpu1 = 1,  /**< \brief CPU1 interrupt service provider, which handles the interrupt service request. */
     IfxSrc_Tos_cpu2 = 2,  /**< \brief CPU2 interrupt service provider, which handles the interrupt service request. */
-    IfxSrc_Tos_dma = 3    /**< \brief DMA interrupt service provider, which handles the interrupt service request. */
+    IfxSrc_Tos_dma = 3,   /**< \brief DMA interrupt service provider, which handles the interrupt service request. */
 } IfxSrc_Tos;
 
 /** \} */ 

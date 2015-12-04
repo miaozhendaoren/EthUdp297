@@ -1,7 +1,7 @@
 /**
  * \file IfxCpu_Cstart0.c
  * \brief This file contains the Core startup sequence for Cpu0.
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -56,7 +56,7 @@
 #   define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_PCACHE (1)  /**< Program Cache enabled by default*/
 #endif
 #ifndef IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_DCACHE
-#   define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_DCACHE (0)  /**< Program Cache disabled by default*/
+#   define IFX_CFG_CPU_CSTART_ENABLE_TRICORE0_DCACHE (1)  /**< Data Cache enabled by default*/
 #endif
 
 #ifndef IFXCPU_CSTART_CCU_INIT_HOOK

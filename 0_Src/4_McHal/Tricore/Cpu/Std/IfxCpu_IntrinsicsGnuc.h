@@ -1,6 +1,6 @@
 /**
  * \file IfxCpu_IntrinsicsGnuc.h
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -26,7 +26,6 @@
 
 #ifndef IFXCPU_INTRINSICSGNUC_H
 #define IFXCPU_INTRINSICSGNUC_H
-
 
 /* old style intrinsics handling for AGENtiX environment */
 #if defined(SCTB_EMBEDDED)
@@ -1219,7 +1218,6 @@ IFX_INLINE float __fabsf(float f)
     return res;
 }
 
-
 #if !IFXCPU_INTRINSICSGNUC_USE_MACHINE_INTRINSICS
 /**  Move contents of the addressed core SFR into a data register
  */
@@ -1232,7 +1230,6 @@ IFX_INLINE float __fabsf(float f)
  */
 #define __mtcr(regaddr,val) __asm__ volatile ("mtcr %0,%1\n\tisync"::"i"(regaddr),"d"(val):"memory")
 #endif
-
 
 /**  Return parity
  */
@@ -1460,6 +1457,40 @@ IFX_INLINE unsigned int __cmpAndSwap (unsigned int volatile *address,
   return retval;
 #endif
 }
+
+/** \brief Convert a fixpoint value to float32
+ *
+ * This function converts a value from a fixpoint format to a float32 format.
+ *
+ *
+ * \param value value to be converted.
+ * \param shift position of the fix point. Range = [-256, 255] => (Qx.y format where x = shift+1).
+ *
+ * \return Returns the converted value in the float32 format.
+ *
+ */
+IFX_INLINE float32 __fixpoint_to_float32(fract value, sint32 shift)
+{
+    float32 result;
+
+    __asm__ volatile("q31tof %0, %1, %2": "=d" (result) : "d" (value), "d" (shift));
+    return result;
+}
+
+#define IFX_ALIGN(n)       __attribute__ ((aligned(n)))
+
+IFX_INLINE void* __getA11(void)
+{
+    uint32 *res;
+    __asm__ volatile ("mov.aa %0, %%a11": "=a" (res) : :"a11");
+    return res;
+}
+
+IFX_INLINE void __setStackPointer(void *stackAddr)
+{
+    __asm__ volatile ("mov.aa %%a10, %0": : "a" (stackAddr) :"a10");
+}
+
 /******************************************************************************/
 /* *INDENT-ON* */
 #endif /* IFXCPU_INTRINSICSGNUC_H */

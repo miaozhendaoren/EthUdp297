@@ -3,7 +3,7 @@
  * \brief PORT  basic functionality
  * \ingroup IfxLld_Port
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -45,6 +45,7 @@
 /******************************************************************************/
 
 #include "_Impl/IfxPort_cfg.h"
+#include "Scu/Std/IfxScuWdt.h"
 
 /******************************************************************************/
 /*--------------------------------Enumerations--------------------------------*/
@@ -121,11 +122,23 @@ typedef enum
     IfxPort_PadDriver_cmosAutomotiveSpeed2 = 1,  /**< \brief Speed grade 2. */
     IfxPort_PadDriver_cmosAutomotiveSpeed3 = 2,  /**< \brief Speed grade 3. */
     IfxPort_PadDriver_cmosAutomotiveSpeed4 = 3,  /**< \brief Speed grade 4. */
+    IfxPort_PadDriver_lvdsSpeed1           = 4,  /**< \brief Lvds Speed grade 1 */
+    IfxPort_PadDriver_lvdsSpeed2           = 5,  /**< \brief Lvds Speed grade 2 */
+    IfxPort_PadDriver_lvdsSpeed3           = 6,  /**< \brief Lvds Speed grade 3 */
+    IfxPort_PadDriver_lvdsSpeed4           = 7,  /**< \brief Lvds Speed grade 4 */
     IfxPort_PadDriver_ttlSpeed1            = 8,  /**< \brief Speed grade 1. */
     IfxPort_PadDriver_ttlSpeed2            = 9,  /**< \brief Speed grade 2. */
     IfxPort_PadDriver_ttlSpeed3            = 10, /**< \brief Speed grade 3. */
     IfxPort_PadDriver_ttlSpeed4            = 11  /**< \brief Speed grade 4. */
 } IfxPort_PadDriver;
+
+/** \brief MODULE_PORTx.LPCRx.B.PS1.Selects between 5v and 3.3v on Vext supply for the LVDSM pair
+ */
+typedef enum
+{
+    IfxPort_PadSupply_5v = 0,  /**< \brief select, 5V supply */
+    IfxPort_PadSupply_3v = 1   /**< \brief select, 3V supply */
+} IfxPort_PadSupply;
 
 /** \brief Ifx_P output modification modes definition.
  *
@@ -140,6 +153,15 @@ typedef enum
 } IfxPort_State;
 
 /** \} */
+
+/** \brief The LVDS RX_DIS control function can be selected from the Port (default) or
+ * HSCT module.declared in MODULE_PORTx.LPCRx
+ */
+typedef enum
+{
+    IfxPort_ControlledBy_port = 0,  /**< \brief port controlled by PORT Module */
+    IfxPort_ControlledBy_hsct = 1   /**< \brief Port controlled by HSCT Module */
+} IfxPort_ControlledBy;
 
 /******************************************************************************/
 /*-----------------------------Data Structures--------------------------------*/
@@ -450,6 +472,24 @@ IFX_EXTERN void IfxPort_setGroupModeOutput(Ifx_P *port, uint8 pinIndex, uint16 m
  *
  */
 IFX_EXTERN void IfxPort_setGroupPadDriver(Ifx_P *port, uint8 pinIndex, uint16 mask, IfxPort_PadDriver padDriver);
+
+/** \brief set LVDSM mode
+ * \param port Pointer to the port which should be accessed.
+ * \param pinIndex specifies pin to be modified
+ * \param lvdsPadDriver select speed grade of LVDS Pad
+ * \param padSupply select the PAD supply (5/3.3V)
+ * \return None
+ */
+IFX_EXTERN void IfxPort_setPinModeLvdsMedium(Ifx_P *port, uint8 pinIndex, IfxPort_PadDriver lvdsPadDriver, IfxPort_PadSupply padSupply);
+
+/** \brief set LVDSH mode (configured for Port21)
+ * \param port Pointer to the port which should be accessed.
+ * \param pinIndex specifies pin  to be modified
+ * \param mode specifes the mode of pin
+ * \param enablePortControlled specifies whether it is controlled by port or HSCT
+ * \return None
+ */
+IFX_EXTERN void IfxPort_setPinModeLvdsHigh(Ifx_P *port, uint8 pinIndex, IfxPort_Mode mode, IfxPort_ControlledBy enablePortControlled);
 
 /** \} */
 

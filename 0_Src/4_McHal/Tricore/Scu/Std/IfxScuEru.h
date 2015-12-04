@@ -3,7 +3,7 @@
  * \brief SCU  basic functionality
  * \ingroup IfxLld_Scu
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -46,7 +46,7 @@
 /******************************************************************************/
 
 #include "_Impl/IfxScu_cfg.h"
-#include "IfxScu_reg.h"
+#include "_Reg/IfxScu_reg.h"
 #include "Cpu/Std/IfxCpu.h"
 #include "_PinMap/IfxScu_PinMap.h"
 
@@ -157,19 +157,19 @@ IFX_INLINE void IfxScuEru_initReqPin(IfxScu_Req_In *req, IfxPort_InputMode input
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief Determines which input line is selcted for input channel x
- * \param inputChannel Input channel for input selection  and conditioning of trigger or gating functions
- * \param inputSignal Input line selection for input channel
- * \return None
- */
-IFX_EXTERN void IfxScuEru_selectExternalInput(IfxScuEru_InputChannel inputChannel, IfxScuEru_ExternalInputSelection inputSignal);
-
 /** \brief Gets the channel number and input selection information from request Id
  * \param requestId Request Id number
  * \param ers Structure for external request input selection to be filled
  * \return None
  */
 IFX_EXTERN void IfxScuEru_getExternalInputSelection(uint8 requestId, IfxScuEru_ERS *ers);
+
+/** \brief Determines which input line is selcted for input channel x
+ * \param inputChannel Input channel for input selection  and conditioning of trigger or gating functions
+ * \param inputSignal Input line selection for input channel
+ * \return None
+ */
+IFX_EXTERN void IfxScuEru_selectExternalInput(IfxScuEru_InputChannel inputChannel, IfxScuEru_ExternalInputSelection inputSignal);
 
 /** \} */
 

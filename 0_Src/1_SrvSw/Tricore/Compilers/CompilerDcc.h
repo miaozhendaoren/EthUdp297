@@ -1,7 +1,7 @@
 /**
  * \file CompilerDcc.h
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -114,6 +114,10 @@ __interrupt__ void isr (void)
 
 #endif /*defined(IFX_USE_SW_MANAGED_INT)*/
 /* *INDENT-ON* */
+
+/******************************************************************************/
+
+#define IFX_ALIGN(n)       __attribute__ ((aligned(n)))
 
 /******************************************************************************/
 #endif /* COMPILERDCC_H */

@@ -1,6 +1,6 @@
 /**
  * \file IfxCpu_IntrinsicsTasking.h
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -118,7 +118,7 @@ IFX_INLINE void __jump_and_link(void (*fun)(void))
 
 #define __extr(a, p, w)             __extr(a,p,w)
 
-#define __imaskldmst                __imaskldmst
+#define __imaskldmst(a, v, b, p)    __imaskldmst((int*)a, v, b, p)
 
 #define __insert(a,b,p,w)           __insert(a,b,p,w)
 
@@ -240,6 +240,41 @@ IFX_INLINE void __stopPerfCounters(void)
 #define  __cmpAndSwap(address,value,condition) \
      __cmpswapw((address), ((unsigned long)value), (condition) )
 
+/** \brief Convert a fixpoint value to float32
+ *
+ * This function converts a value from a fixpoint format to a float32 format.
+ *
+ *
+ * \param value value to be converted.
+ * \param shift position of the fix point. Range = [-256, 255] => (Qx.y format where x = shift+1).
+ *
+ * \return Returns the converted value in the float32 format.
+ *
+ */
+IFX_INLINE float32 __fixpoint_to_float32(fract value, sint32 shift)
+{
+    float32 result;
+
+    __asm(
+        "   q31tof\t%0, %1, %2  \n"
+        : "=d" (result)
+        : "d" (value), "d" (shift));
+    return result;
+}
+
+#define IFX_ALIGN(n)       __attribute__ ((__align(n)))
+
+IFX_INLINE void* __getA11(void)
+{
+    uint32 *res;
+    __asm__ volatile ("mov.aa %0, a11": "=a" (res) : :"a11");
+    return res;
+}
+
+IFX_INLINE void __setStackPointer(void *stackAddr)
+{
+    __asm__ volatile ("mov.aa a10, %0": : "a" (stackAddr) :"a10");
+}
 /* *INDENT-ON* */
 /******************************************************************************/
 #endif /* IFXCPU_INTRINSICSTASKING_H */

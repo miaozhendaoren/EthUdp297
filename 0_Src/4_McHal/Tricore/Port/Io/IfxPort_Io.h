@@ -3,7 +3,7 @@
  * \brief PORT IO details
  * \ingroup IfxLld_Port
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -149,7 +149,6 @@
 /******************************************************************************/
 
 #include "Port/Std/IfxPort.h"
-#include "_PinMap/IfxPort_PinMap.h"
 
 /******************************************************************************/
 /*-----------------------------Data Structures--------------------------------*/

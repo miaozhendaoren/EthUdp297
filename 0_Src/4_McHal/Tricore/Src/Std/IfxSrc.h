@@ -3,7 +3,7 @@
  * \brief SRC  basic functionality
  * \ingroup IfxLld_Src
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -97,6 +97,8 @@
 /******************************************************************************/
 
 #include "_Impl/IfxSrc_cfg.h"
+#include "Cpu/Std/IfxCpu_Intrinsics.h"
+#include "_Reg/IfxSrc_reg.h"
 /** \addtogroup IfxLld_Src_Std_Service_Request
  * \{ */
 

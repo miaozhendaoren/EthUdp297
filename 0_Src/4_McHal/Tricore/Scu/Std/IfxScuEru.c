@@ -2,7 +2,7 @@
  * \file IfxScuEru.c
  * \brief SCU  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -280,6 +280,84 @@ boolean IfxScuEru_getEventFlagStatus(IfxScuEru_InputChannel inputChannel)
 }
 
 
+void IfxScuEru_getExternalInputSelection(uint8 requestId, IfxScuEru_ERS *ers)
+{
+    switch (requestId)
+    {
+    case 0:
+        ers->inputChannel = IfxScuEru_InputChannel_0;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 1:
+        ers->inputChannel = IfxScuEru_InputChannel_5;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 2:
+        ers->inputChannel = IfxScuEru_InputChannel_2;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 3:
+        ers->inputChannel = IfxScuEru_InputChannel_3;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 4:
+        ers->inputChannel = IfxScuEru_InputChannel_0;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
+        break;
+    case 5:
+        ers->inputChannel = IfxScuEru_InputChannel_1;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
+        break;
+    case 6:
+        ers->inputChannel = IfxScuEru_InputChannel_3;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
+        break;
+    case 7:
+        ers->inputChannel = IfxScuEru_InputChannel_2;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
+        break;
+    case 8:
+        ers->inputChannel = IfxScuEru_InputChannel_4;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 9:
+        ers->inputChannel = IfxScuEru_InputChannel_6;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 10:
+        ers->inputChannel = IfxScuEru_InputChannel_1;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 11:
+        ers->inputChannel = IfxScuEru_InputChannel_7;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
+        break;
+    case 12:
+        ers->inputChannel = IfxScuEru_InputChannel_6;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_3;
+        break;
+    case 13:
+        ers->inputChannel = IfxScuEru_InputChannel_4;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_3;
+        break;
+    case 14:
+        ers->inputChannel = IfxScuEru_InputChannel_2;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_1;
+        break;
+    case 15:
+        ers->inputChannel = IfxScuEru_InputChannel_3;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_1;
+        break;
+    case 16:
+        ers->inputChannel = IfxScuEru_InputChannel_7;
+        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
+        break;
+    default:
+        break;
+    }
+}
+
+
 uint32 IfxScuEru_getInputChannelConfiguration(IfxScuEru_InputChannel inputChannel)
 {
     // select appropriate EICRi register for the given input channel X ( i = 0,1,2,3 and X = 0 to 7 )
@@ -391,83 +469,5 @@ void IfxScuEru_setInterruptGatingPattern(IfxScuEru_OutputChannel outputChannel, 
     else    // for channels 0, 2, 4 and 6
     {
         MODULE_SCU.IGCR[index].B.IGP0 = gatingPattern;
-    }
-}
-
-
-void IfxScuEru_getExternalInputSelection(uint8 requestId, IfxScuEru_ERS *ers)
-{
-    switch (requestId)
-    {
-    case 0:
-        ers->inputChannel = IfxScuEru_InputChannel_0;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 1:
-        ers->inputChannel = IfxScuEru_InputChannel_5;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 2:
-        ers->inputChannel = IfxScuEru_InputChannel_2;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 3:
-        ers->inputChannel = IfxScuEru_InputChannel_3;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 4:
-        ers->inputChannel = IfxScuEru_InputChannel_0;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
-        break;
-    case 5:
-        ers->inputChannel = IfxScuEru_InputChannel_1;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
-        break;
-    case 6:
-        ers->inputChannel = IfxScuEru_InputChannel_3;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
-        break;
-    case 7:
-        ers->inputChannel = IfxScuEru_InputChannel_2;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
-        break;
-    case 8:
-        ers->inputChannel = IfxScuEru_InputChannel_4;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 9:
-        ers->inputChannel = IfxScuEru_InputChannel_6;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 10:
-        ers->inputChannel = IfxScuEru_InputChannel_1;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 11:
-        ers->inputChannel = IfxScuEru_InputChannel_7;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_0;
-        break;
-    case 12:
-        ers->inputChannel = IfxScuEru_InputChannel_6;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_3;
-        break;
-    case 13:
-        ers->inputChannel = IfxScuEru_InputChannel_4;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_3;
-        break;
-    case 14:
-        ers->inputChannel = IfxScuEru_InputChannel_2;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_1;
-        break;
-    case 15:
-        ers->inputChannel = IfxScuEru_InputChannel_3;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_1;
-        break;
-    case 16:
-        ers->inputChannel = IfxScuEru_InputChannel_7;
-        ers->inputSelect  = IfxScuEru_ExternalInputSelection_2;
-        break;
-    default:
-        break;
     }
 }

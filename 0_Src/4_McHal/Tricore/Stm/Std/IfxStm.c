@@ -2,7 +2,7 @@
  * \file IfxStm.c
  * \brief STM  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -63,7 +63,7 @@ IfxStm_ResourceStm IfxStm_getIndex(Ifx_STM *stm)
 
     result = IfxStm_ResourceStm_none;
 
-    for (index = 0; index < IFXSTM_COUNT; index++)
+    for (index = 0; index < IFXSTM_NUM_MODULES; index++)
     {
         if (IfxStm_cfg_indexMap[index].module == stm)
         {
@@ -143,4 +143,21 @@ void IfxStm_initCompareConfig(IfxStm_CompareConfig *config)
     config->comparatorInterrupt     = IfxStm_ComparatorInterrupt_ir0; /*User must select the interrupt output */
     config->ticks                   = 0xFFFFFFFF;
     /* TODO add interrupt configuration */
+}
+
+
+void IfxStm_resetModule(Ifx_STM *stm)
+{
+    uint16 passwd = IfxScuWdt_getCpuWatchdogPassword();
+    IfxScuWdt_clearCpuEndinit(passwd);
+
+    stm->KRST0.B.RST = 1;             /* Only if both Kernel reset bits are set a reset is executed */
+    stm->KRST1.B.RST = 1;
+
+    while (0 == stm->KRST0.B.RSTSTAT) /* Wait until reset is executed */
+    {}
+
+    stm->KRSTCLR.B.CLR = 1;           /* Clear Kernel reset status bit */
+
+    IfxScuWdt_setCpuEndinit(passwd);
 }

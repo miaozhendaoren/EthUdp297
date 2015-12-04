@@ -2,7 +2,7 @@
  * \file Ifx_GlobalResources.h
  * \brief Handling of global resources
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *

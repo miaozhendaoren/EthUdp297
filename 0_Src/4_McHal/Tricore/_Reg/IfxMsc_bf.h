@@ -1,9 +1,6 @@
-/*
-*/
 /**
  * \file IfxMsc_bf.h
  * \brief
- * \version iLLD_0_1_0_6
  * \copyright Copyright (c) 2014 Infineon Technologies AG. All rights reserved.
  *
  * Version: TC29X_UM_V1.1.R1

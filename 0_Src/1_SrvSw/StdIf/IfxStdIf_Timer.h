@@ -3,7 +3,7 @@
  * \brief Standard interface: Timer
  * \ingroup IfxStdIf
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -92,6 +92,13 @@ typedef Ifx_TimerValue (*IfxStdIf_Timer_GetPeriod)(IfxStdIf_InterfaceDriver driv
  * \return Return the timer resolution in seconds
  */
 typedef float32 (*IfxStdIf_Timer_GetResolution)(IfxStdIf_InterfaceDriver driver);
+
+/** \brief Return the timer trigger point
+ * \param driver Pointer to the interface driver object
+ * \return Return the timer timer point
+ */
+typedef Ifx_TimerValue (*IfxStdIf_Timer_GetTrigger)(IfxStdIf_InterfaceDriver driver);
+
 
 /** \brief Set the timer frequency in Hz
  * \param driver Pointer to the interface driver object
@@ -217,6 +224,7 @@ struct IfxStdIf_Timer_
     IfxStdIf_Timer_GetFrequency         getFrequency;            /**< \brief \see IfxStdIf_Timer_GetFrequency         */
     IfxStdIf_Timer_GetPeriod            getPeriod;               /**< \brief \see IfxStdIf_Timer_GetPeriod            */
     IfxStdIf_Timer_GetResolution        getResolution;           /**< \brief \see IfxStdIf_Timer_GetResolution        */
+    IfxStdIf_Timer_GetTrigger           getTrigger;              /**< \brief \see IfxStdIf_Timer_GetTrigger           */
     IfxStdIf_Timer_SetFrequency         setFrequency;            /**< \brief \see IfxStdIf_Timer_SetFrequency         */
     IfxStdIf_Timer_UpdateInputFrequency updateInputFrequency;    /**< \brief \see IfxStdIf_Timer_UpdateInputFrequency */
     IfxStdIf_Timer_ApplyUpdate          applyUpdate;             /**< \brief \see IfxStdIf_Timer_ApplyUpdate          */
@@ -253,6 +261,7 @@ typedef struct
     float32                   minResolution; /**< \brief Minimum resolution of the timer in seconds. if 0, this parameter is ignored. If the configuration does not enable this setting a warning is given */
     IfxStdIf_Timer_TrigConfig trigger;       /**< \brief Trigger configuration */
     IfxStdIf_Timer_CountDir   countDir;      /**< \brief Timer counting mode */
+    float32 				  startOffset;   /**< \brief FIXME make startOffset as Ifx_TimerValue. Timer initial offset in % of the period */
 } IfxStdIf_Timer_Config;
 
 /** \addtogroup library_srvsw_stdif_timer
@@ -269,6 +278,13 @@ IFX_INLINE float32 IfxStdIf_Timer_getFrequency(IfxStdIf_Timer *stdIf)
 IFX_INLINE Ifx_TimerValue IfxStdIf_Timer_getPeriod(IfxStdIf_Timer *stdIf)
 {
     return stdIf->getPeriod(stdIf->driver);
+}
+
+
+/** \copydoc IfxStdIf_Timer_GetTrigger */
+IFX_INLINE Ifx_TimerValue IfxStdIf_Timer_getTrigger(IfxStdIf_Timer *stdIf)
+{
+    return stdIf->getTrigger(stdIf->driver);
 }
 
 
@@ -395,3 +411,4 @@ IFX_INLINE Ifx_TimerValue IfxStdIf_Timer_sToTick(float32 clockFreq, float32 seco
 void IfxStdIf_Timer_initConfig(IfxStdIf_Timer_Config *config);
 
 #endif /* IFXSTDIF_TIMER_H_ */
+

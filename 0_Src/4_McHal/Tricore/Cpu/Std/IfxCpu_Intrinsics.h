@@ -2,7 +2,7 @@
  * \file IfxCpu_Intrinsics.h
  * \ingroup IfxLld_Cpu_Intrinsics Intrinsics
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -144,5 +144,8 @@ IFX_INLINE void __st64_lu(void *addr, uint32 valueLower, uint32 valueUpper)
 #define IFX_VECTOR_CPU0 (0)
 #define IFX_VECTOR_CPU1 (1)
 #define IFX_VECTOR_CPU2 (2)
+#define IFX_VECTOR_CPU3 (3)
+#define IFX_VECTOR_CPU4 (4)
+#define IFX_VECTOR_CPU5 (5)
 /******************************************************************************/
 #endif /* IFXCPU_INTRINSICS_H */

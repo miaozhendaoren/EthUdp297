@@ -1,9 +1,6 @@
-/*
-*/
 /**
  * \file IfxEbcu_bf.h
  * \brief
- * \version iLLD_0_1_0_6
  * \copyright Copyright (c) 2014 Infineon Technologies AG. All rights reserved.
  *
  * Version: TC2XXED_TS_V1.0.R1

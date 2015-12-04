@@ -1,9 +1,9 @@
 /**
  * \file IfxPort_cfg.h
- * \brief Port on-chip implementation data 
- * \ingroup IfxLld_Port 
+ * \brief Port on-chip implementation data
+ * \ingroup IfxLld_Port
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -38,34 +38,30 @@
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
 
-/** \brief Port count              \ingroup IfxLld_port_cfg 
+/** \brief Port count              \ingroup IfxLld_port_cfg
  */
-#define IFXPORT_COUNT (21)
-                
-#define IFXPORT_OUTOUTFEATURE_NONE (0xFFFFFFFF)
-                
+#define IFXPORT_NUM_MODULES        (21)
 
+#define IFXPORT_OUTOUTFEATURE_NONE (0xFFFFFFFF)
 
 /******************************************************************************/
 /*-----------------------------Data Structures--------------------------------*/
 /******************************************************************************/
 
-/** \brief used by IfxPort_Esr_Masks table  
+/** \brief used by IfxPort_Esr_Masks table
  */
 typedef struct
 {
-    Ifx_P*    port;   
-    uint16    masks;  
+    Ifx_P *port;
+    uint16 masks;
 } IfxPort_Esr_Masks;
-
 
 /******************************************************************************/
 /*-------------------Global Exported Variables/Constants----------------------*/
 /******************************************************************************/
 
-IFX_EXTERN const IfxPort_Esr_Masks IfxPort_cfg_esrMasks[IFXPORT_COUNT];
+IFX_EXTERN const IfxPort_Esr_Masks  IfxPort_cfg_esrMasks[IFXPORT_NUM_MODULES];
 
-IFX_EXTERN const IfxModule_IndexMap IfxPort_cfg_indexMap[IFXPORT_COUNT];
-
+IFX_EXTERN const IfxModule_IndexMap IfxPort_cfg_indexMap[IFXPORT_NUM_MODULES];
 
 #endif /* IFXPORT_CFG_H */

@@ -28,6 +28,7 @@
 #include "Cpu0_Main.h"
 #include "SysSe/Bsp/Bsp.h"
 #include "Ifx_Lwip.h"
+#include "IfxPort_PinMap.h"
 #include "IfxPort_Io.h"
 #include "IfxPort_cfg.h"
 
@@ -145,15 +146,15 @@ int core0_main(void)
         	total = Ifx_g_Eth.config.phyLink();
             if (total == 1) {
     			IfxPort_setPinLow(&MODULE_P33, 6);
-    			gIfxEth_initTransmitDescriptors();
-    			gIfxEth_startTransmitter();
+    			//gIfxEth_initTransmitDescriptors();
+    			//gIfxEth_startTransmitter();
     		} else {
     			IfxPort_setPinHigh(&MODULE_P33, 6);
     			IfxEth_stopTransmitter(&Ifx_g_Eth);
     		}
         }
 
-        stat = IfxEth_Phy_Pef7071_MIIState();
+        //stat = IfxEth_Phy_Pef7071_MIIState();
 
         if ((stat & 0x0003) != 0x01) {
             IfxPort_setPinLow(&MODULE_P33, 7);

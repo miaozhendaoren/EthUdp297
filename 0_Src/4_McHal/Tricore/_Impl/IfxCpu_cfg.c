@@ -2,7 +2,7 @@
  * \file IfxCpu_cfg.c
  * \brief Cpu on-chip implementation data
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -32,8 +32,8 @@
 /*-----------------------Exported Variables/Constants-------------------------*/
 /******************************************************************************/
 
-const IfxModule_IndexMap IfxCpu_cfg_indexMap[IFXCPU_COUNT] = {
+const IfxModule_IndexMap IfxCpu_cfg_indexMap[IFXCPU_NUM_MODULES] = {
     {&MODULE_CPU0, (uint32)IfxCpu_ResourceCpu_0},
     {&MODULE_CPU1, (uint32)IfxCpu_ResourceCpu_1},
-    {&MODULE_CPU2, (uint32)IfxCpu_ResourceCpu_2},
+    {&MODULE_CPU2, (uint32)IfxCpu_ResourceCpu_2}
 };

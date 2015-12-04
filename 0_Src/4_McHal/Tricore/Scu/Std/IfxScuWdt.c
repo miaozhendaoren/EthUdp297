@@ -2,7 +2,7 @@
  * \file IfxScuWdt.c
  * \brief SCU  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -41,6 +41,197 @@
 /******************************************************************************/
 /*-------------------------Function Implementations---------------------------*/
 /******************************************************************************/
+
+void IfxScuWdt_changeCpuWatchdogPassword(uint16 password, uint16 newPassword)
+{
+    Ifx_SCU_WDTCPU     *watchdog = &MODULE_SCU.WDTCPU[IfxCpu_getCoreId()];
+
+    /* Read Config_0 register */
+    Ifx_SCU_WDTCPU_CON0 wdt_con0;
+    wdt_con0.U = watchdog->CON0.U;
+
+    if (wdt_con0.B.LCK)
+    {
+        /* see Table 1 (Password Access Bit Pattern Requirements) */
+        wdt_con0.B.ENDINIT = 1;
+        wdt_con0.B.LCK     = 0;
+        wdt_con0.B.PW      = password;
+
+        /* Password ready. Store it to WDT_CON0 to unprotect the register */
+        watchdog->CON0.U = wdt_con0.U;
+    }
+
+    /* Set new Password, ENDINT and LCK bit in Config_0 register */
+    wdt_con0.B.ENDINIT = 1;
+    wdt_con0.B.LCK     = 1;
+    wdt_con0.B.PW      = newPassword;
+    watchdog->CON0.U   = wdt_con0.U;
+
+    /* read back ENDINIT and wait until it has been set */
+    while (watchdog->CON0.B.ENDINIT == 0)
+    {}
+}
+
+
+void IfxScuWdt_changeCpuWatchdogReload(uint16 password, uint16 reload)
+{
+    /* Select CPU Watchdog based on Core Id */
+    uint32              coreId = IfxCpu_getCoreId();
+    Ifx_SCU_WDTCPU     *wdt    = &MODULE_SCU.WDTCPU[coreId];
+
+    /* Read Config_0 register */
+    Ifx_SCU_WDTCPU_CON0 wdt_con0;
+    wdt_con0.U = wdt->CON0.U;
+
+    if (wdt_con0.B.LCK)
+    {
+        /* see Table 1 (Password Access Bit Pattern Requirements) */
+        wdt_con0.B.ENDINIT = 1;
+        wdt_con0.B.LCK     = 0;
+        wdt_con0.B.PW      = password;
+
+        /* Password ready. Store it to WDT_CON0 to unprotect the register */
+        wdt->CON0.U = wdt_con0.U;
+    }
+
+    /* Set new Reload value, set ENDINT and LCK bit in Config_0 register */
+    wdt_con0.B.ENDINIT = 1;
+    wdt_con0.B.LCK     = 1;
+    wdt_con0.B.REL     = reload;
+    wdt->CON0.U        = wdt_con0.U;
+
+    /* read back ENDINIT and wait until it has been set */
+    while (wdt->CON0.B.ENDINIT == 0)
+    {}
+}
+
+
+void IfxScuWdt_changeSafetyWatchdogPassword(uint16 password, uint16 newPassword)
+{
+    Ifx_SCU_WDTS     *watchdog = &MODULE_SCU.WDTS;
+
+    /* Read Config_0 register */
+    Ifx_SCU_WDTS_CON0 wdt_con0;
+    wdt_con0.U = watchdog->CON0.U;
+
+    if (wdt_con0.B.LCK)
+    {
+        /* see Table 1 (Password Access Bit Pattern Requirements) */
+        wdt_con0.B.ENDINIT = 1;
+        wdt_con0.B.LCK     = 0;
+        wdt_con0.B.PW      = password;
+
+        /* Password ready. Store it to WDT_CON0 to unprotect the register */
+        watchdog->CON0.U = wdt_con0.U;
+    }
+
+    /* Set new Password, ENDINT and LCK bit in Config_0 register */
+    wdt_con0.B.ENDINIT = 1;
+    wdt_con0.B.LCK     = 1;
+    wdt_con0.B.PW      = newPassword;
+    watchdog->CON0.U   = wdt_con0.U;
+
+    /* read back ENDINIT and wait until it has been set */
+    while (watchdog->CON0.B.ENDINIT == 0)
+    {}
+}
+
+
+void IfxScuWdt_changeSafetyWatchdogReload(uint16 password, uint16 reload)
+{
+    /* Initialize pointer to Safety Watchdog */
+    Ifx_SCU_WDTS     *wdt = &MODULE_SCU.WDTS;
+
+    /* Read Config_0 register */
+    Ifx_SCU_WDTS_CON0 wdt_con0;
+    wdt_con0.U = wdt->CON0.U;
+
+    if (wdt_con0.B.LCK)
+    {
+        /* see Table 1 (Password Access Bit Pattern Requirements) */
+        wdt_con0.B.ENDINIT = 1;
+        wdt_con0.B.LCK     = 0;
+        wdt_con0.B.PW      = password;
+
+        /* Password ready. Store it to WDT_CON0 to unprotect the register */
+        wdt->CON0.U = wdt_con0.U;
+    }
+
+    /* Set new Reload value, set ENDINT and LCK bit in Config_0 register */
+    wdt_con0.B.ENDINIT = 1;
+    wdt_con0.B.LCK     = 1;
+    wdt_con0.B.REL     = reload;
+    wdt->CON0.U        = wdt_con0.U;
+
+    /* read back ENDINIT and wait until it has been set */
+    while (wdt->CON0.B.ENDINIT == 0)
+    {}
+}
+
+
+void IfxScuWdt_clearCpuEndinit(uint16 password)
+{
+    IfxScuWdt_clearCpuEndinitInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()], password);
+}
+
+
+void IfxScuWdt_clearSafetyEndinit(uint16 password)
+{
+    IfxScuWdt_clearSafetyEndinitInline(password);
+}
+
+
+void IfxScuWdt_disableCpuWatchdog(uint16 password)
+{
+    /* Select CPU Watchdog based on Core Id */
+    uint32          coreId = IfxCpu_getCoreId();
+    Ifx_SCU_WDTCPU *wdt    = &MODULE_SCU.WDTCPU[coreId];
+
+    IfxScuWdt_clearCpuEndinit(password);
+    wdt->CON1.B.DR = 1;         //Set DR bit in Config_1 register
+    IfxScuWdt_setCpuEndinit(password);
+}
+
+
+void IfxScuWdt_disableSafetyWatchdog(uint16 password)
+{
+    IfxScuWdt_clearSafetyEndinit(password);
+    SCU_WDTS_CON1.B.DR = 1;     //Set DR bit in Config_1 register
+    IfxScuWdt_setSafetyEndinit(password);
+}
+
+
+void IfxScuWdt_enableCpuWatchdog(uint16 password)
+{
+    /* Select CPU Watchdog based on Core Id */
+    uint32          coreId = IfxCpu_getCoreId();
+    Ifx_SCU_WDTCPU *wdt    = &MODULE_SCU.WDTCPU[coreId];
+
+    IfxScuWdt_clearCpuEndinit(password);
+    wdt->CON1.B.DR = 0;         //Clear DR bit in Config_1 register
+    IfxScuWdt_setCpuEndinit(password);
+}
+
+
+void IfxScuWdt_enableSafetyWatchdog(uint16 password)
+{
+    IfxScuWdt_clearSafetyEndinit(password);
+    SCU_WDTS_CON1.B.DR = 0;     //Clear DR bit in Config_1 register
+    IfxScuWdt_setSafetyEndinit(password);
+}
+
+
+uint16 IfxScuWdt_getCpuWatchdogPassword(void)
+{
+    return IfxScuWdt_getCpuWatchdogPasswordInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()]);
+}
+
+
+uint16 IfxScuWdt_getSafetyWatchdogPassword(void)
+{
+    return IfxScuWdt_getSafetyWatchdogPasswordInline();
+}
+
 
 void IfxScuWdt_initConfig(IfxScuWdt_Config *config)
 {
@@ -189,127 +380,9 @@ void IfxScuWdt_initSafetyWatchdog(Ifx_SCU_WDTS *wdt, IfxScuWdt_Config *config)
 }
 
 
-void IfxScuWdt_clearCpuEndinit(uint16 password)
-{
-    IfxScuWdt_clearCpuEndinitInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()], password);
-}
-
-
-void IfxScuWdt_setCpuEndinit(uint16 password)
-{
-    IfxScuWdt_setCpuEndinitInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()], password);
-}
-
-
 void IfxScuWdt_serviceCpuWatchdog(uint16 password)
 {
     IfxScuWdt_setCpuEndinit(password);
-}
-
-
-void IfxScuWdt_changeCpuWatchdogPassword(uint16 password, uint16 newPassword)
-{
-    Ifx_SCU_WDTCPU     *watchdog = &MODULE_SCU.WDTCPU[IfxCpu_getCoreId()];
-
-    /* Read Config_0 register */
-    Ifx_SCU_WDTCPU_CON0 wdt_con0;
-    wdt_con0.U = watchdog->CON0.U;
-
-    if (wdt_con0.B.LCK)
-    {
-        /* see Table 1 (Password Access Bit Pattern Requirements) */
-        wdt_con0.B.ENDINIT = 1;
-        wdt_con0.B.LCK     = 0;
-        wdt_con0.B.PW      = password;
-
-        /* Password ready. Store it to WDT_CON0 to unprotect the register */
-        watchdog->CON0.U = wdt_con0.U;
-    }
-
-    /* Set new Password, ENDINT and LCK bit in Config_0 register */
-    wdt_con0.B.ENDINIT = 1;
-    wdt_con0.B.LCK     = 1;
-    wdt_con0.B.PW      = newPassword;
-    watchdog->CON0.U   = wdt_con0.U;
-
-    /* read back ENDINIT and wait until it has been set */
-    while (watchdog->CON0.B.ENDINIT == 0)
-    {}
-}
-
-
-void IfxScuWdt_enableCpuWatchdog(uint16 password)
-{
-    /* Select CPU Watchdog based on Core Id */
-    uint32          coreId = IfxCpu_getCoreId();
-    Ifx_SCU_WDTCPU *wdt    = &MODULE_SCU.WDTCPU[coreId];
-
-    IfxScuWdt_clearCpuEndinit(password);
-    wdt->CON1.B.DR = 0;         //Clear DR bit in Config_1 register
-    IfxScuWdt_setCpuEndinit(password);
-}
-
-
-void IfxScuWdt_disableCpuWatchdog(uint16 password)
-{
-    /* Select CPU Watchdog based on Core Id */
-    uint32          coreId = IfxCpu_getCoreId();
-    Ifx_SCU_WDTCPU *wdt    = &MODULE_SCU.WDTCPU[coreId];
-
-    IfxScuWdt_clearCpuEndinit(password);
-    wdt->CON1.B.DR = 1;         //Set DR bit in Config_1 register
-    IfxScuWdt_setCpuEndinit(password);
-}
-
-
-void IfxScuWdt_changeCpuWatchdogReload(uint16 password, uint16 reload)
-{
-    /* Select CPU Watchdog based on Core Id */
-    uint32              coreId = IfxCpu_getCoreId();
-    Ifx_SCU_WDTCPU     *wdt    = &MODULE_SCU.WDTCPU[coreId];
-
-    /* Read Config_0 register */
-    Ifx_SCU_WDTCPU_CON0 wdt_con0;
-    wdt_con0.U = wdt->CON0.U;
-
-    if (wdt_con0.B.LCK)
-    {
-        /* see Table 1 (Password Access Bit Pattern Requirements) */
-        wdt_con0.B.ENDINIT = 1;
-        wdt_con0.B.LCK     = 0;
-        wdt_con0.B.PW      = password;
-
-        /* Password ready. Store it to WDT_CON0 to unprotect the register */
-        wdt->CON0.U = wdt_con0.U;
-    }
-
-    /* Set new Reload value, set ENDINT and LCK bit in Config_0 register */
-    wdt_con0.B.ENDINIT = 1;
-    wdt_con0.B.LCK     = 1;
-    wdt_con0.B.REL     = reload;
-    wdt->CON0.U        = wdt_con0.U;
-
-    /* read back ENDINIT and wait until it has been set */
-    while (wdt->CON0.B.ENDINIT == 0)
-    {}
-}
-
-
-uint16 IfxScuWdt_getCpuWatchdogPassword(void)
-{
-    return IfxScuWdt_getCpuWatchdogPasswordInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()]);
-}
-
-
-void IfxScuWdt_clearSafetyEndinit(uint16 password)
-{
-    IfxScuWdt_clearSafetyEndinitInline(password);
-}
-
-
-void IfxScuWdt_setSafetyEndinit(uint16 password)
-{
-    IfxScuWdt_setSafetyEndinitInline(password);
 }
 
 
@@ -319,86 +392,13 @@ void IfxScuWdt_serviceSafetyWatchdog(uint16 password)
 }
 
 
-void IfxScuWdt_changeSafetyWatchdogPassword(uint16 password, uint16 newPassword)
+void IfxScuWdt_setCpuEndinit(uint16 password)
 {
-    Ifx_SCU_WDTS     *watchdog = &MODULE_SCU.WDTS;
-
-    /* Read Config_0 register */
-    Ifx_SCU_WDTS_CON0 wdt_con0;
-    wdt_con0.U = watchdog->CON0.U;
-
-    if (wdt_con0.B.LCK)
-    {
-        /* see Table 1 (Password Access Bit Pattern Requirements) */
-        wdt_con0.B.ENDINIT = 1;
-        wdt_con0.B.LCK     = 0;
-        wdt_con0.B.PW      = password;
-
-        /* Password ready. Store it to WDT_CON0 to unprotect the register */
-        watchdog->CON0.U = wdt_con0.U;
-    }
-
-    /* Set new Password, ENDINT and LCK bit in Config_0 register */
-    wdt_con0.B.ENDINIT = 1;
-    wdt_con0.B.LCK     = 1;
-    wdt_con0.B.PW      = newPassword;
-    watchdog->CON0.U   = wdt_con0.U;
-
-    /* read back ENDINIT and wait until it has been set */
-    while (watchdog->CON0.B.ENDINIT == 0)
-    {}
+    IfxScuWdt_setCpuEndinitInline(&MODULE_SCU.WDTCPU[IfxCpu_getCoreId()], password);
 }
 
 
-void IfxScuWdt_enableSafetyWatchdog(uint16 password)
+void IfxScuWdt_setSafetyEndinit(uint16 password)
 {
-    IfxScuWdt_clearSafetyEndinit(password);
-    SCU_WDTS_CON1.B.DR = 0;     //Clear DR bit in Config_1 register
-    IfxScuWdt_setSafetyEndinit(password);
-}
-
-
-void IfxScuWdt_disableSafetyWatchdog(uint16 password)
-{
-    IfxScuWdt_clearSafetyEndinit(password);
-    SCU_WDTS_CON1.B.DR = 1;     //Set DR bit in Config_1 register
-    IfxScuWdt_setSafetyEndinit(password);
-}
-
-
-void IfxScuWdt_changeSafetyWatchdogReload(uint16 password, uint16 reload)
-{
-    /* Initialize pointer to Safety Watchdog */
-    Ifx_SCU_WDTS     *wdt = &MODULE_SCU.WDTS;
-
-    /* Read Config_0 register */
-    Ifx_SCU_WDTS_CON0 wdt_con0;
-    wdt_con0.U = wdt->CON0.U;
-
-    if (wdt_con0.B.LCK)
-    {
-        /* see Table 1 (Password Access Bit Pattern Requirements) */
-        wdt_con0.B.ENDINIT = 1;
-        wdt_con0.B.LCK     = 0;
-        wdt_con0.B.PW      = password;
-
-        /* Password ready. Store it to WDT_CON0 to unprotect the register */
-        wdt->CON0.U = wdt_con0.U;
-    }
-
-    /* Set new Reload value, set ENDINT and LCK bit in Config_0 register */
-    wdt_con0.B.ENDINIT = 1;
-    wdt_con0.B.LCK     = 1;
-    wdt_con0.B.REL     = reload;
-    wdt->CON0.U        = wdt_con0.U;
-
-    /* read back ENDINIT and wait until it has been set */
-    while (wdt->CON0.B.ENDINIT == 0)
-    {}
-}
-
-
-uint16 IfxScuWdt_getSafetyWatchdogPassword(void)
-{
-    return IfxScuWdt_getSafetyWatchdogPasswordInline();
+    IfxScuWdt_setSafetyEndinitInline(password);
 }

@@ -3,7 +3,7 @@
  * \brief This file contains the APIs for Interrupt related functions.
  *
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -36,7 +36,8 @@
 *******************************************************************************/
 #include "Ifx_Cfg.h"
 #include "Cpu/Std/Ifx_Types.h"
-
+#include "Cpu/Std/IfxCpu.h"
+#include "Src/Std/IfxSrc.h"
 /*******************************************************************************
 **                      Type definitions                                     **
 *******************************************************************************/
@@ -70,6 +71,20 @@ IFX_INLINE void interruptHandlerInstall(uint32 srpn, uint32 addr)
 
 /** \}  */
 #endif /*defined(IFX_USE_SW_MANAGED_INT) */
+
+/** \addtogroup IfxLld_Cpu_Irq_Usage
+ * \{  */
+/** \brief API to get type of service of the caller CPU.
+ * \param coreId core id of the core
+ * \return type of service for the corresponding CPU.
+ */
+IFX_INLINE IfxSrc_Tos IfxCpu_Irq_getTos(IfxCpu_ResourceCpu coreId)
+{
+    return (IfxSrc_Tos)coreId;
+}
+
+
+/** \}  */
 
 /*Documentation */
 /** \addtogroup IfxLld_Cpu_Irq_Usage

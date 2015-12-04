@@ -1,7 +1,7 @@
 /**
  * \file CompilerTasking.h
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -35,8 +35,8 @@
 
 /*Start: Common definitions ********************************************** */
 #define IFXCOMPILER_COMMON_LINKER_SYMBOLS() \
-    __asm("\t .extern (DATA)  _SMALL_DATA_, _LITERAL_DATA_, _A8_DATA_, _A9_DATA_");
-#define a a##b
+    __asm("\t .extern _SMALL_DATA_, _LITERAL_DATA_, _A8_DATA_, _A9_DATA_");
+
 /*End: Common definitions ********************************************** */
 
 /*Start: Core 0 definitions ********************************************** */
@@ -107,4 +107,9 @@
 /* *INDENT-ON* */
 
 /******************************************************************************/
+
+#define IFX_ALIGN(n)       __attribute__ ((__align(n)))
+
+/******************************************************************************/
+
 #endif /* COMPILERTASKING_H */

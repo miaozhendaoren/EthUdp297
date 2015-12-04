@@ -1,9 +1,9 @@
 /**
  * \file IfxDma_cfg.h
- * \brief Dma on-chip implementation data 
- * \ingroup IfxLld_Dma 
+ * \brief Dma on-chip implementation data
+ * \ingroup IfxLld_Dma
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -31,45 +31,39 @@
 /******************************************************************************/
 
 #include "Cpu/Std/Ifx_Types.h"
-#include "Cpu/Std/IfxCpu_Intrinsics.h"
-#include "Src/Std/IfxSrc.h"
-#include "_Reg/IfxDma_bf.h"
-#include "_Reg/IfxDma_reg.h"
-#include "Cpu/Std/IfxCpu.h"
 
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
 
-/** \brief Error mask for move engine source error 
+/** \brief Error mask for move engine source error
  */
-#define IFXDMA_ERROR_S (IFX_DMA_BLK_CLRE_CSER_MSK << IFX_DMA_BLK_CLRE_CSER_OFF)
-                
-/** \brief Error mask for move engine destination error 
+#define IFXDMA_ERROR_S      (IFX_DMA_BLK_CLRE_CSER_MSK << IFX_DMA_BLK_CLRE_CSER_OFF)
+
+/** \brief Error mask for move engine destination error
  */
-#define IFXDMA_ERROR_D (IFX_DMA_BLK_CLRE_CDER_MSK << IFX_DMA_BLK_CLRE_CDER_OFF)
-                
-/** \brief Error mask for bus error on SPB 
+#define IFXDMA_ERROR_D      (IFX_DMA_BLK_CLRE_CDER_MSK << IFX_DMA_BLK_CLRE_CDER_OFF)
+
+/** \brief Error mask for bus error on SPB
  */
-#define IFXDMA_ERROR_SPB (IFX_DMA_BLK_CLRE_CSPBER_MSK << IFX_DMA_BLK_CLRE_CSPBER_OFF)
-                
-/** \brief Error mask for bus error on SRI 
+#define IFXDMA_ERROR_SPB    (IFX_DMA_BLK_CLRE_CSPBER_MSK << IFX_DMA_BLK_CLRE_CSPBER_OFF)
+
+/** \brief Error mask for bus error on SRI
  */
-#define IFXDMA_ERROR_SRI (IFX_DMA_BLK_CLRE_CSRIER_MSK << IFX_DMA_BLK_CLRE_CSRIER_OFF)
-                
-/** \brief Error mask for RAM error 
+#define IFXDMA_ERROR_SRI    (IFX_DMA_BLK_CLRE_CSRIER_MSK << IFX_DMA_BLK_CLRE_CSRIER_OFF)
+
+/** \brief Error mask for RAM error
  */
-#define IFXDMA_ERROR_RAM (IFX_DMA_BLK_CLRE_CRAMER_MSK << IFX_DMA_BLK_CLRE_CRAMER_OFF)
-                
-/** \brief Error mask for SLL (safe linked list CRC checksum) error 
+#define IFXDMA_ERROR_RAM    (IFX_DMA_BLK_CLRE_CRAMER_MSK << IFX_DMA_BLK_CLRE_CRAMER_OFF)
+
+/** \brief Error mask for SLL (safe linked list CRC checksum) error
  */
-#define IFXDMA_ERROR_SLL (IFX_DMA_BLK_CLRE_CSLLER_MSK << IFX_DMA_BLK_CLRE_CSLLER_OFF)
-                
-/** \brief Error mask for DLL (failed linked list load) error 
+#define IFXDMA_ERROR_SLL    (IFX_DMA_BLK_CLRE_CSLLER_MSK << IFX_DMA_BLK_CLRE_CSLLER_OFF)
+
+/** \brief Error mask for DLL (failed linked list load) error
  */
-#define IFXDMA_ERROR_DLL (IFX_DMA_BLK_CLRE_CDLLER_MSK << IFX_DMA_BLK_CLRE_CDLLER_OFF)
-                
+#define IFXDMA_ERROR_DLL    (IFX_DMA_BLK_CLRE_CDLLER_MSK << IFX_DMA_BLK_CLRE_CDLLER_OFF)
+
 #define IFXDMA_NUM_CHANNELS 128
-                
 
 #endif /* IFXDMA_CFG_H */

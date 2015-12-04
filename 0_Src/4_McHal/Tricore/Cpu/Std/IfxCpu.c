@@ -2,7 +2,7 @@
  * \file IfxCpu.c
  * \brief CPU  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -20,6 +20,7 @@
  * INFINEON SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL,
  * OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  *
+ *
  */
 
 /******************************************************************************/
@@ -27,11 +28,31 @@
 /******************************************************************************/
 
 #include "IfxCpu.h"
-#include "_Impl/IfxScu_cfg.h"
 
 /******************************************************************************/
 /*-------------------------Function Implementations---------------------------*/
 /******************************************************************************/
+
+boolean IfxCpu_acquireMutex(IfxCpu_mutexLock *lock)
+{
+    boolean         retVal;
+    volatile uint32 spinLockVal;
+
+    retVal      = FALSE;
+
+    spinLockVal = 1UL;
+    spinLockVal =
+        (uint32)__cmpAndSwap(((unsigned int *)lock), spinLockVal, 0);
+
+    /* Check if the SpinLock WAS set before the attempt to acquire spinlock */
+    if (spinLockVal == 0)
+    {
+        retVal = TRUE;
+    }
+
+    return retVal;
+}
+
 
 Ifx_CPU *IfxCpu_getAddress(IfxCpu_ResourceCpu cpu)
 {
@@ -110,7 +131,7 @@ IfxCpu_ResourceCpu IfxCpu_getIndex(Ifx_CPU *cpu)
     uint32             index;
     result = IfxCpu_ResourceCpu_none;
 
-    for (index = 0; index < IFXCPU_COUNT; index++)
+    for (index = 0; index < IFXCPU_NUM_MODULES; index++)
     {
         if (IfxCpu_cfg_indexMap[index].module == cpu)
         {
@@ -120,6 +141,20 @@ IfxCpu_ResourceCpu IfxCpu_getIndex(Ifx_CPU *cpu)
     }
 
     return result;
+}
+
+
+void IfxCpu_releaseMutex(IfxCpu_mutexLock *lock)
+{
+    /*Reset the SpinLock*/
+    *lock = 0;
+}
+
+
+void IfxCpu_resetSpinLock(IfxCpu_spinLock *lock)
+{
+    /*Reset the SpinLock*/
+    *lock = 0;
 }
 
 
@@ -281,24 +316,6 @@ boolean IfxCpu_setProgramCounter(Ifx_CPU *cpu, uint32 programCounter)
 }
 
 
-boolean IfxCpu_startCore(Ifx_CPU *cpu, uint32 programCounter)
-{
-    boolean retVal = TRUE;
-
-    /* Set the PC for Core 1 */
-    retVal &= IfxCpu_setProgramCounter(cpu, programCounter);
-    /* Get the mode for Core 1 and set it to RUNNING */
-
-    /* Core not running already */
-    if (IfxCpu_getCoreMode(cpu) == IfxCpu_CoreMode_halt)
-    {
-        retVal &= IfxCpu_setCoreMode(cpu, IfxCpu_CoreMode_run);
-    }
-
-    return retVal;
-}
-
-
 boolean IfxCpu_setSpinLock(IfxCpu_spinLock *lock, uint32 timeoutCount)
 {
     boolean         retVal;
@@ -327,36 +344,19 @@ boolean IfxCpu_setSpinLock(IfxCpu_spinLock *lock, uint32 timeoutCount)
 }
 
 
-void IfxCpu_resetSpinLock(IfxCpu_spinLock *lock)
+boolean IfxCpu_startCore(Ifx_CPU *cpu, uint32 programCounter)
 {
-    /*Reset the SpinLock*/
-    *lock = 0;
-}
+    boolean retVal = TRUE;
 
+    /* Set the PC for Core 1 */
+    retVal &= IfxCpu_setProgramCounter(cpu, programCounter);
+    /* Get the mode for Core 1 and set it to RUNNING */
 
-boolean IfxCpu_acquireMutex(IfxCpu_mutexLock *lock)
-{
-    boolean         retVal;
-    volatile uint32 spinLockVal;
-
-    retVal      = FALSE;
-
-    spinLockVal = 1UL;
-    spinLockVal =
-        (uint32)__cmpAndSwap(((unsigned int *)lock), spinLockVal, 0);
-
-    /* Check if the SpinLock WAS set before the attempt to acquire spinlock */
-    if (spinLockVal == 0)
+    /* Core not running already */
+    if (IfxCpu_getCoreMode(cpu) == IfxCpu_CoreMode_halt)
     {
-        retVal = TRUE;
+        retVal &= IfxCpu_setCoreMode(cpu, IfxCpu_CoreMode_run);
     }
 
     return retVal;
-}
-
-
-void IfxCpu_releaseMutex(IfxCpu_mutexLock *lock)
-{
-    /*Reset the SpinLock*/
-    *lock = 0;
 }

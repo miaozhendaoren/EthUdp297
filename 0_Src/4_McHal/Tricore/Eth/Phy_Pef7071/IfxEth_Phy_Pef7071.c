@@ -2,7 +2,7 @@
  * \file IfxEth_Phy_Pef7071.c
  * \brief ETH PHY_PEF7071 details
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -98,25 +98,6 @@
 
 #define IFXETH_PHY_PEF7071_WAIT_GMII_READY() while (ETH_GMII_ADDRESS.B.GB) {}
 
-/** \addtogroup IfxLld_Eth_Phy_Pef7071_Functions
- * \{ */
-
-/******************************************************************************/
-/*-----------------------Private Function Prototypes--------------------------*/
-/******************************************************************************/
-
-/**
- * \return None
- */
-static void IfxEth_Phy_Pef7071_read_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 *pdata);
-
-/**
- * \return None
- */
-static void IfxEth_Phy_Pef7071_write_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 data);
-
-/** \} */
-
 /******************************************************************************/
 /*-----------------------Exported Variables/Constants-------------------------*/
 /******************************************************************************/
@@ -152,7 +133,6 @@ uint32 IfxEth_Phy_Pef7071_init(void)
     IfxEth_Phy_Pef7071_write_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_MIICTRL, 0xF702); // skew adaptation is needed, RMII mode (10/100MBit)
     IfxEth_Phy_Pef7071_write_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_GCTRL, 0x0000);   // advertise no 1000BASE-T (full/half duplex)
     IfxEth_Phy_Pef7071_write_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_AN_ADV, 0x0101);  // advertise 100BASE-TX full duplex only
-    IfxEth_Phy_Pef7071_write_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_EECTRL, 0x0000);
     IfxEth_Phy_Pef7071_write_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_CTRL, 0x1200);    // enable auto-negotiation, restart auto-negotiation
 
     //  we set our loop mode (RJ45) in side the PHY (PHYCTL1 register) if we will have a loop
@@ -165,29 +145,7 @@ uint32 IfxEth_Phy_Pef7071_init(void)
     return 1;
 }
 
-uint32 IfxEth_Phy_Pef7071_EECTRL(void)
-{
-	uint32 value;
 
-	IfxEth_Phy_Pef7071_read_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_EECTRL, &value);
-	return value;
-}
-
-uint32 IfxEth_Phy_Pef7071_Stat(void)
-{
-	uint32 value;
-
-	IfxEth_Phy_Pef7071_read_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_STAT, &value);
-	return value;
-}
-
-uint32 IfxEth_Phy_Pef7071_MIIState(void)
-{
-	uint32 value;
-
-	IfxEth_Phy_Pef7071_read_mdio_reg(0, IFXETH_PHY_PEF7071_MDIO_MIISTAT, &value);
-	return value;
-}
 boolean IfxEth_Phy_Pef7071_link(void)
 {
     boolean linkEstablished = FALSE;
@@ -203,7 +161,7 @@ boolean IfxEth_Phy_Pef7071_link(void)
 }
 
 
-static void IfxEth_Phy_Pef7071_read_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 *pdata)
+void IfxEth_Phy_Pef7071_read_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 *pdata)
 {
     // 5bit Physical Layer Adddress, 5bit GMII Regnr, 4bit csrclock divider, Read, Busy
     ETH_GMII_ADDRESS.U = (layeraddr << 11) | (regaddr << 6) | (0 << 2) | (0 << 1) | (1 << 0);
@@ -215,13 +173,7 @@ static void IfxEth_Phy_Pef7071_read_mdio_reg(uint32 layeraddr, uint32 regaddr, u
 }
 
 
-void PhyTest()
-{
-	IfxEth_Phy_Pef7071_iPhyInitDone = 0;
-	IfxEth_Phy_Pef7071_init();
-}
-
-static void IfxEth_Phy_Pef7071_write_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 data)
+void IfxEth_Phy_Pef7071_write_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 data)
 {
     // put data
     ETH_GMII_DATA.U = data;

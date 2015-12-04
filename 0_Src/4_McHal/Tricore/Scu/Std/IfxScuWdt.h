@@ -3,7 +3,7 @@
  * \brief SCU  basic functionality
  * \ingroup IfxLld_Scu
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -45,7 +45,7 @@
 
 #include "_Impl/IfxScu_cfg.h"
 #include "Cpu/Std/Ifx_Types.h"
-#include "IfxScu_reg.h"
+#include "_Reg/IfxScu_reg.h"
 #include "IfxScuWdt.asm.h"
 
 /******************************************************************************/
@@ -134,18 +134,6 @@ IFX_EXTERN void IfxScuWdt_initSafetyWatchdog(Ifx_SCU_WDTS *wdt, IfxScuWdt_Config
  */
 IFX_INLINE void IfxScuWdt_clearCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16 password);
 
-/** \brief SCUWDT Inline API to Set ENDINIT bit provided by CPU WDT Hardware module.
- *
- * This API will enable ENDINIT functionality provided by CPU WDT Hardware module.
- * This API is only meant to be used with startup routines where function call is not possible.
- * User need to use this API call after modifying any ENDINIT protected register.
- * User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
- * \param watchdog pointer to the watchdog register map of CPU WDT hardware instance
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_INLINE void IfxScuWdt_setCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16 password);
-
 /** \brief SCUWDT Inline API to Clear ENDINIT bit provided by Safety WDT Hardware module.
  *
  * This API will disable ENDINIT functionality provided by Safety WDT Hardware module.
@@ -158,6 +146,18 @@ IFX_INLINE void IfxScuWdt_setCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16 p
  * \return None
  */
 IFX_INLINE void IfxScuWdt_clearSafetyEndinitInline(uint16 password);
+
+/** \brief SCUWDT Inline API to Set ENDINIT bit provided by CPU WDT Hardware module.
+ *
+ * This API will enable ENDINIT functionality provided by CPU WDT Hardware module.
+ * This API is only meant to be used with startup routines where function call is not possible.
+ * User need to use this API call after modifying any ENDINIT protected register.
+ * User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
+ * \param watchdog pointer to the watchdog register map of CPU WDT hardware instance
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_INLINE void IfxScuWdt_setCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16 password);
 
 /** \brief SCUWDT Inline API to Set ENDINIT bit provided by Safety WDT Hardware module.
  *
@@ -186,16 +186,6 @@ IFX_INLINE void IfxScuWdt_setSafetyEndinitInline(uint16 password);
  */
 IFX_EXTERN void IfxScuWdt_clearCpuEndinit(uint16 password);
 
-/** \brief SCUWDT API to set ENDINIT bit provided by CPU WDT Hardware module.
- *
- *   This API will enable ENDINIT functionality provided by CPU WDT Hardware module.
- *   User need to use this API call after modifying any ENDINIT protected register.
- *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword)
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_setCpuEndinit(uint16 password);
-
 /** \brief SCUWDT API to Clear ENDINIT bit provided by Safety WDT Hardware module.
  *
  * This API will disable ENDINIT functionality provided by Safety WDT Hardware module.
@@ -207,6 +197,16 @@ IFX_EXTERN void IfxScuWdt_setCpuEndinit(uint16 password);
  * \return None
  */
 IFX_EXTERN void IfxScuWdt_clearSafetyEndinit(uint16 password);
+
+/** \brief SCUWDT API to set ENDINIT bit provided by CPU WDT Hardware module.
+ *
+ *   This API will enable ENDINIT functionality provided by CPU WDT Hardware module.
+ *   User need to use this API call after modifying any ENDINIT protected register.
+ *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword)
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_setCpuEndinit(uint16 password);
 
 /** \brief SCUWDT API to Set ENDINIT bit provided by Safety WDT Hardware module.
  *
@@ -252,16 +252,6 @@ IFX_INLINE uint16 IfxScuWdt_getSafetyWatchdogPasswordInline(void);
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief SCUWDT API to service CPU Watchdog functionality.
- *
- *   This API will service Watchdog functionality corresponding to CPU WDT Hardware module.
- *   User need to use this API call periodically. This API results in reloading of the Watchdog Timer.
- *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_serviceCpuWatchdog(uint16 password);
-
 /** \brief SCUWDT API to change CPU Watchdog password.
  *
  *   This API will change password to new one for the corresponding to CPU WDT Hardware module.
@@ -271,26 +261,6 @@ IFX_EXTERN void IfxScuWdt_serviceCpuWatchdog(uint16 password);
  * \return None
  */
 IFX_EXTERN void IfxScuWdt_changeCpuWatchdogPassword(uint16 password, uint16 newPassword);
-
-/** \brief SCUWDT API to enable CPU Watchdog functionality.
- *
- *   This API will enable Watchdog functionality of CPU WDT Hardware module. The Watchdog timers need to be serviced
- *   periodically after this API call.
- *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_enableCpuWatchdog(uint16 password);
-
-/** \brief SCUWDT API to disable CPU Watchdog functionality.
- *
- * This API will disable Watchdog functionality of CPU WDT Hardware module. The Watchdog timers will stop counting
- * after this API call.
- * User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_disableCpuWatchdog(uint16 password);
 
 /** \brief SCUWDT API to change CPU Watchdog timer reload value.
  *
@@ -303,25 +273,6 @@ IFX_EXTERN void IfxScuWdt_disableCpuWatchdog(uint16 password);
  */
 IFX_EXTERN void IfxScuWdt_changeCpuWatchdogReload(uint16 password, uint16 reload);
 
-/** \brief SCUWDT API to fetch current password of CPU Watchdog module.
- *
- * This API will fetch current Watchdog password for CPU WDT Hardware module. password is needed to be passed
- * with most of the WDT APIs. Normally this API can be used to store the password locally in the caller function
- * or store the password globally in a global variable at the application memory.
- * \return password Existing (Application specific) password for the Watchdog module.
- */
-IFX_EXTERN uint16 IfxScuWdt_getCpuWatchdogPassword(void);
-
-/** \brief SCUWDT API to service Safety Watchdog functionality.
- *
- * This API will service Watchdog functionality corresponding to Safety WDT Hardware module.
- * User need to use this API call periodically. This API results in reloading of the Watchdog Timer.
- * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_serviceSafetyWatchdog(uint16 password);
-
 /** \brief SCUWDT API to change Safety Watchdog password.
  *
  * This API will change password to new one for the corresponding to Safety WDT Hardware module.
@@ -331,26 +282,6 @@ IFX_EXTERN void IfxScuWdt_serviceSafetyWatchdog(uint16 password);
  * \return None
  */
 IFX_EXTERN void IfxScuWdt_changeSafetyWatchdogPassword(uint16 password, uint16 newPassword);
-
-/** \brief SCUWDT API to enable Safety Watchdog functionality.
- *
- * This API will enable Watchdog functionality of Safety WDT Hardware module. The Watchdog timers need to be serviced
- * periodically after this API call.
- * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_enableSafetyWatchdog(uint16 password);
-
-/** \brief SCUWDT API to disable Safety Watchdog functionality.
- *
- * This API will disable Watchdog functionality of Safety WDT Hardware module. The Watchdog timers will stop counting
- * after this API call.
- * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
- * \param password Existing (Application specific) password for the Watchdog module.
- * \return None
- */
-IFX_EXTERN void IfxScuWdt_disableSafetyWatchdog(uint16 password);
 
 /** \brief SCUWDT API to change Safety Watchdog timer reload value.
  *
@@ -363,6 +294,55 @@ IFX_EXTERN void IfxScuWdt_disableSafetyWatchdog(uint16 password);
  */
 IFX_EXTERN void IfxScuWdt_changeSafetyWatchdogReload(uint16 password, uint16 reload);
 
+/** \brief SCUWDT API to disable CPU Watchdog functionality.
+ *
+ * This API will disable Watchdog functionality of CPU WDT Hardware module. The Watchdog timers will stop counting
+ * after this API call.
+ * User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_disableCpuWatchdog(uint16 password);
+
+/** \brief SCUWDT API to disable Safety Watchdog functionality.
+ *
+ * This API will disable Watchdog functionality of Safety WDT Hardware module. The Watchdog timers will stop counting
+ * after this API call.
+ * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_disableSafetyWatchdog(uint16 password);
+
+/** \brief SCUWDT API to enable CPU Watchdog functionality.
+ *
+ *   This API will enable Watchdog functionality of CPU WDT Hardware module. The Watchdog timers need to be serviced
+ *   periodically after this API call.
+ *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_enableCpuWatchdog(uint16 password);
+
+/** \brief SCUWDT API to enable Safety Watchdog functionality.
+ *
+ * This API will enable Watchdog functionality of Safety WDT Hardware module. The Watchdog timers need to be serviced
+ * periodically after this API call.
+ * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_enableSafetyWatchdog(uint16 password);
+
+/** \brief SCUWDT API to fetch current password of CPU Watchdog module.
+ *
+ * This API will fetch current Watchdog password for CPU WDT Hardware module. password is needed to be passed
+ * with most of the WDT APIs. Normally this API can be used to store the password locally in the caller function
+ * or store the password globally in a global variable at the application memory.
+ * \return password Existing (Application specific) password for the Watchdog module.
+ */
+IFX_EXTERN uint16 IfxScuWdt_getCpuWatchdogPassword(void);
+
 /** \brief SCUWDT API to fetch current password of Safety Watchdog module.
  *
  * This API will fetch current Watchdog password for Safety WDT Hardware module. password is needed to be passed
@@ -371,6 +351,26 @@ IFX_EXTERN void IfxScuWdt_changeSafetyWatchdogReload(uint16 password, uint16 rel
  * \return password Existing (Application specific) password for the Watchdog module.
  */
 IFX_EXTERN uint16 IfxScuWdt_getSafetyWatchdogPassword(void);
+
+/** \brief SCUWDT API to service CPU Watchdog functionality.
+ *
+ *   This API will service Watchdog functionality corresponding to CPU WDT Hardware module.
+ *   User need to use this API call periodically. This API results in reloading of the Watchdog Timer.
+ *   User need to have the password stored locally in the caller function, (use IfxScuWdt_getCpuWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_serviceCpuWatchdog(uint16 password);
+
+/** \brief SCUWDT API to service Safety Watchdog functionality.
+ *
+ * This API will service Watchdog functionality corresponding to Safety WDT Hardware module.
+ * User need to use this API call periodically. This API results in reloading of the Watchdog Timer.
+ * User need to have the password stored locally in the caller function, (use IfxScuWdt_getSafetyWatchdogPassword).
+ * \param password Existing (Application specific) password for the Watchdog module.
+ * \return None
+ */
+IFX_EXTERN void IfxScuWdt_serviceSafetyWatchdog(uint16 password);
 
 /** \} */
 
@@ -387,6 +387,35 @@ IFX_INLINE void IfxScuWdt_clearCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16
     if (wdt_con0.B.LCK)
     {
         /* see Table 1 (Pass.word Access Bit Pattern Requirements) */
+        wdt_con0.B.ENDINIT = 1;
+        wdt_con0.B.LCK     = 0;
+        wdt_con0.B.PW      = password;
+
+        /* Password ready. Store it to WDT_CON0 to unprotect the register */
+        watchdog->CON0.U = wdt_con0.U;
+    }
+
+    /* Clear ENDINT and set LCK bit in Config_0 register */
+    wdt_con0.B.ENDINIT = 0;
+    wdt_con0.B.LCK     = 1;
+    watchdog->CON0.U   = wdt_con0.U;
+
+    /* read back ENDINIT and wait until it has been cleared */
+    while (watchdog->CON0.B.ENDINIT == 1)
+    {}
+}
+
+
+IFX_INLINE void IfxScuWdt_clearSafetyEndinitInline(uint16 password)
+{
+    Ifx_SCU_WDTS     *watchdog = &MODULE_SCU.WDTS;
+    /* Read Config_0 register */
+    Ifx_SCU_WDTS_CON0 wdt_con0;
+    wdt_con0.U = watchdog->CON0.U;
+
+    if (wdt_con0.B.LCK)
+    {
+        /* see Table 1 (Password Access Bit Pattern Requirements) */
         wdt_con0.B.ENDINIT = 1;
         wdt_con0.B.LCK     = 0;
         wdt_con0.B.PW      = password;
@@ -433,35 +462,6 @@ IFX_INLINE void IfxScuWdt_setCpuEndinitInline(Ifx_SCU_WDTCPU *watchdog, uint16 p
     {}
 
     // FIXME: old version: removed this line after check: watchdog->CON0.U; /* read is required */
-}
-
-
-IFX_INLINE void IfxScuWdt_clearSafetyEndinitInline(uint16 password)
-{
-    Ifx_SCU_WDTS     *watchdog = &MODULE_SCU.WDTS;
-    /* Read Config_0 register */
-    Ifx_SCU_WDTS_CON0 wdt_con0;
-    wdt_con0.U = watchdog->CON0.U;
-
-    if (wdt_con0.B.LCK)
-    {
-        /* see Table 1 (Password Access Bit Pattern Requirements) */
-        wdt_con0.B.ENDINIT = 1;
-        wdt_con0.B.LCK     = 0;
-        wdt_con0.B.PW      = password;
-
-        /* Password ready. Store it to WDT_CON0 to unprotect the register */
-        watchdog->CON0.U = wdt_con0.U;
-    }
-
-    /* Clear ENDINT and set LCK bit in Config_0 register */
-    wdt_con0.B.ENDINIT = 0;
-    wdt_con0.B.LCK     = 1;
-    watchdog->CON0.U   = wdt_con0.U;
-
-    /* read back ENDINIT and wait until it has been cleared */
-    while (watchdog->CON0.B.ENDINIT == 1)
-    {}
 }
 
 

@@ -2,7 +2,7 @@
  * \file IfxPort_cfg.c
  * \brief Port on-chip implementation data
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -28,13 +28,12 @@
 /******************************************************************************/
 
 #include "IfxPort_cfg.h"
-#include "Port/Std/IfxPort.h"
 
 /******************************************************************************/
 /*-----------------------Exported Variables/Constants-------------------------*/
 /******************************************************************************/
 
-const IfxPort_Esr_Masks  IfxPort_cfg_esrMasks[IFXPORT_COUNT] = {
+const IfxPort_Esr_Masks  IfxPort_cfg_esrMasks[IFXPORT_NUM_MODULES] = {
     {&MODULE_P00, 0x0000FFFFUL},    // Port 00
     {&MODULE_P01, 0x0000FFFFUL},    // Port 01
     {&MODULE_P02, 0x0000FFFFUL},    // Port 02
@@ -59,7 +58,7 @@ const IfxPort_Esr_Masks  IfxPort_cfg_esrMasks[IFXPORT_COUNT] = {
     //{&MODULE_P40, 0x0000FFFFUL}   // Port 40
 };
 
-const IfxModule_IndexMap IfxPort_cfg_indexMap[IFXPORT_COUNT] = {
+const IfxModule_IndexMap IfxPort_cfg_indexMap[IFXPORT_NUM_MODULES] = {
     {&MODULE_P00, 0 },     // Port 00
     {&MODULE_P01, 1 },     // Port 01
     {&MODULE_P02, 2 },     // Port 02

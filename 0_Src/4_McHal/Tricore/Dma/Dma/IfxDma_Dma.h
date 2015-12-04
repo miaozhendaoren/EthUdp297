@@ -3,7 +3,7 @@
  * \brief DMA DMA details
  * \ingroup IfxLld_Dma
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -35,6 +35,8 @@
  *
  * \code
  *     #include <Dma/Dma/IfxDma_Dma.h>
+ *     #include <Vadc/Adc/IfxVadc_Adc.h>
+ *
  * \endcode
  *
  *
@@ -155,7 +157,7 @@
  *      uint32 mask = 0xff; // modify the selection of all channels
  *
  *      // configure autoscan (single shot, not continuous scan)
- *      IfxVadc_Adc_setScan(&adcGroup, channels, mask, FALSE);
+ *      IfxVadc_Adc_setScan(&adcGroup, channels, mask);
  *     }
  * }
  * \endcode
@@ -239,7 +241,7 @@
  *         // interrupt configuration
  *         chnCfg.channelInterruptEnabled       = TRUE; // service request from DMA after all words have been transfered
  *         chnCfg.channelInterruptPriority      = IFX_INTPRIO_DMA_CH0;
- *         chnCfg.channelInterruptTypeOfService = (IfxSrc_Tos)IfxCpu_getCoreId();
+ *         chnCfg.channelInterruptTypeOfService = IfxCpu_Irq_getTos(IfxCpu_getCoreId());
  *
  *         // source and destination address
  *         chnCfg.sourceAddress                   = (uint32)&adcGroup.group->RES[0]; // first result register
@@ -275,7 +277,7 @@
  *      uint32 mask = 0xff; // modify the selection of all channels
  *
  *      // configure and start autoscan (single shot, not continuous mode)
- *      IfxVadc_Adc_setScan(&adcGroup, channels, mask, FALSE);
+ *      IfxVadc_Adc_setScan(&adcGroup, channels, mask);
  *     }
  * \endcode
  *
@@ -428,6 +430,7 @@
 
 #include "_Impl/IfxDma_cfg.h"
 #include "Dma/Std/IfxDma.h"
+#include "Cpu/Std/IfxCpu.h"
 
 /******************************************************************************/
 /*-----------------------------Data Structures--------------------------------*/
@@ -487,8 +490,8 @@ typedef struct
     boolean                          timestampEnabled;                           /**< \brief Enables/Disables the appendage of the time stamp after end of the last DMA move in a transaction */
     boolean                          wrapSourceInterruptEnabled;                 /**< \brief An interrupt should be triggered whenever source address is wrapped */
     boolean                          wrapDestinationInterruptEnabled;            /**< \brief An interrupt should be triggered whenever destination address is wrapped */
-    boolean                          channelInterruptEnabled;                    /**< \brief The channel interrupt should be triggered. See also channelInterruptControl */
-    IfxDma_ChannelInterruptControl   channelInterruptControl;                    /**< \brief The channel interrupt can either be triggered depending on the interruptRaiseThreshold, or each time the transaction count is decremented */
+    boolean                          channelInterruptEnabled;                    /**< \brief The channel transfer interrupt should be triggered. See also channelInterruptControl */
+    IfxDma_ChannelInterruptControl   channelInterruptControl;                    /**< \brief The channel transfer interrupt can either be triggered depending on the interruptRaiseThreshold, or each time the transaction count is decremented */
     uint8                            interruptRaiseThreshold;                    /**< \brief The value of the transferCount at which the interrupt should be raised */
     boolean                          transactionRequestLostInterruptEnabled;     /**< \brief Enables/Disables the channel transaction request lost interrupt */
     Ifx_Priority                     channelInterruptPriority;                   /**< \brief Priority of the channel interrupt trigger */
@@ -618,6 +621,27 @@ IFX_EXTERN void IfxDma_Dma_initLinkedListEntry(void *ptrToAddress, IfxDma_Dma_Ch
 /*-------------------------Inline Function Prototypes-------------------------*/
 /******************************************************************************/
 
+/** \brief Clear a channel transfer interrupt flag
+ * \param channel pointer to the DMA base address and channel ID
+ * \return None
+ */
+IFX_INLINE void IfxDma_Dma_clearChannelInterrupt(IfxDma_Dma_Channel *channel);
+
+/** \brief Return and clear a channel transfer interrupt flag
+ * The flag is automatically cleared with the call to this function
+ * \param channel pointer to the DMA base address and channel ID
+ * \return TRUE if the interrupt flag is set
+ * FALSE if the interrupt flag is not set
+ */
+IFX_INLINE boolean IfxDma_Dma_getAndClearChannelInterrupt(IfxDma_Dma_Channel *channel);
+
+/** \brief Return a channel transfer interrupt flag
+ * \param channel pointer to the DMA base address and channel ID
+ * \return TRUE if the interrupt flag is set
+ * FALSE if the interrupt flag is not set
+ */
+IFX_INLINE boolean IfxDma_Dma_getChannelInterrupt(IfxDma_Dma_Channel *channel);
+
 /** \brief Poll for an ongoing transaction
  * \param channel pointer to the DMA base address and channel ID
  * \return TRUE if a transaction request for the given channel is pending
@@ -666,27 +690,6 @@ IFX_INLINE void IfxDma_Dma_setChannelTransferCount(IfxDma_Dma_Channel *channel, 
  */
 IFX_INLINE void IfxDma_Dma_startChannelTransaction(IfxDma_Dma_Channel *channel);
 
-/** \brief Clear a channel interrupt flag
- * \param channel pointer to the DMA base address and channel ID
- * \return None
- */
-IFX_INLINE void IfxDma_Dma_clearChannelInterrupt(IfxDma_Dma_Channel *channel);
-
-/** \brief Return a channel interrupt flag
- * \param channel pointer to the DMA base address and channel ID
- * \return TRUE if the interrupt flag is set
- * FALSE if the interrupt flag is not set
- */
-IFX_INLINE boolean IfxDma_Dma_getChannelInterrupt(IfxDma_Dma_Channel *channel);
-
-/** \brief Return and clear a channel interrupt flag
- * The flag is automatically cleared with the call to this function
- * \param channel pointer to the DMA base address and channel ID
- * \return TRUE if the interrupt flag is set
- * FALSE if the interrupt flag is not set
- */
-IFX_INLINE boolean IfxDma_Dma_getAndClearChannelInterrupt(IfxDma_Dma_Channel *channel);
-
 /** \} */
 
 /******************************************************************************/
@@ -696,6 +699,24 @@ IFX_INLINE boolean IfxDma_Dma_getAndClearChannelInterrupt(IfxDma_Dma_Channel *ch
 IFX_INLINE volatile Ifx_SRC_SRCR *IfxDma_Dma_getSrcPointer(IfxDma_Dma_Channel *channel)
 {
     return IfxDma_getSrcPointer(channel->dma, channel->channelId);
+}
+
+
+IFX_INLINE void IfxDma_Dma_clearChannelInterrupt(IfxDma_Dma_Channel *channel)
+{
+    IfxDma_clearChannelInterrupt(channel->dma, channel->channelId);
+}
+
+
+IFX_INLINE boolean IfxDma_Dma_getAndClearChannelInterrupt(IfxDma_Dma_Channel *channel)
+{
+    return IfxDma_getAndClearChannelInterrupt(channel->dma, channel->channelId);
+}
+
+
+IFX_INLINE boolean IfxDma_Dma_getChannelInterrupt(IfxDma_Dma_Channel *channel)
+{
+    return IfxDma_getChannelInterrupt(channel->dma, channel->channelId);
 }
 
 
@@ -727,24 +748,6 @@ IFX_INLINE void IfxDma_Dma_startChannelTransaction(IfxDma_Dma_Channel *channel)
 {
     channel->channel->CHCSR.U = 0;  // for linked lists: ensure that this memory location is initialized
     IfxDma_startChannelTransaction(channel->dma, channel->channelId);
-}
-
-
-IFX_INLINE void IfxDma_Dma_clearChannelInterrupt(IfxDma_Dma_Channel *channel)
-{
-    IfxDma_clearChannelInterrupt(channel->dma, channel->channelId);
-}
-
-
-IFX_INLINE boolean IfxDma_Dma_getChannelInterrupt(IfxDma_Dma_Channel *channel)
-{
-    return IfxDma_getChannelInterrupt(channel->dma, channel->channelId);
-}
-
-
-IFX_INLINE boolean IfxDma_Dma_getAndClearChannelInterrupt(IfxDma_Dma_Channel *channel)
-{
-    return IfxDma_getAndClearChannelInterrupt(channel->dma, channel->channelId);
 }
 
 

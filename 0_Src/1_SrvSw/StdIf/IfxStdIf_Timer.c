@@ -3,7 +3,7 @@
  * \brief Standard interface: Timer
  * \ingroup IfxStdIf
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -40,4 +40,6 @@ void IfxStdIf_Timer_initConfig(IfxStdIf_Timer_Config *config)
     config->trigger.isrPriority        = 0;
     config->trigger.isrProvider        = IfxSrc_Tos_cpu0;
     config->countDir                   = IfxStdIf_Timer_CountDir_up;
+    config->startOffset 					   = 0.0;
 }
+

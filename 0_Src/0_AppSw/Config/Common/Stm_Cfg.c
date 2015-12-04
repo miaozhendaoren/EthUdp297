@@ -70,7 +70,7 @@ IFX_INTERRUPT(ISR_Stm0, 0, ISR_PRIORITY_STM_0);
 void ISR_Stm0(void)
 {
     Ifx_STM *stm = &MODULE_STM0;
-    IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
+    //IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
     Core0_Stm_1ms++;
 #if CIFSERV_USE_LWIP
     Ifx_Lwip_onTimerTick();
@@ -113,7 +113,7 @@ IFX_INTERRUPT(ISR_Stm_1, 1, ISR_PRIORITY_STM_1);
 void ISR_Stm_1(void)
 {
     Ifx_STM *stm = &MODULE_STM1;
-    IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
+    //IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
     Core1_Stm_1ms++;
     //Ifx_Lwip_onTimerTick();
 }
@@ -152,7 +152,7 @@ IFX_INTERRUPT(ISR_Stm_2, 2, ISR_PRIORITY_STM_2);
 void ISR_Stm_2(void)
 {
     Ifx_STM *stm = &MODULE_STM2;
-    IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
+    //IfxStm_updateCompare(stm, IfxStm_Comparator_0, IfxStm_getLower(stm) + IFX_CFG_STM_TICKS_PER_MS);
     Core2_Stm_1ms++;
     //Ifx_Lwip_onTimerTick();
 }

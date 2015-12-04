@@ -1,9 +1,6 @@
-/*
-*/
 /**
  * \file Ifx_TypesReg.h
  * \brief
- * \version iLLD_0_1_0_6
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  * Version: IFXREGTYPES_V1.0.R0

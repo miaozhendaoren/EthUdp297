@@ -3,7 +3,7 @@
  * \brief ETH PHY_PEF7071 details
  * \ingroup IfxLld_Eth
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -52,10 +52,15 @@ IFX_EXTERN uint32 IfxEth_Phy_Pef7071_init(void);
  */
 IFX_EXTERN boolean IfxEth_Phy_Pef7071_link(void);
 
-IFX_EXTERN uint32 IfxEth_Phy_Pef7071_Stat(void);
-IFX_EXTERN uint32 IfxEth_Phy_Pef7071_MIIState(void);
-IFX_EXTERN uint32 IfxEth_Phy_Pef7071_EECTRL(void);
-void PhyTest(void);
+/**
+ * \return None
+ */
+IFX_EXTERN void IfxEth_Phy_Pef7071_read_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 *pdata);
+
+/**
+ * \return None
+ */
+IFX_EXTERN void IfxEth_Phy_Pef7071_write_mdio_reg(uint32 layeraddr, uint32 regaddr, uint32 data);
 
 /** \} */
 

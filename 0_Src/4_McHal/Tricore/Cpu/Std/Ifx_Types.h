@@ -2,7 +2,7 @@
  * \file Ifx_Types.h
  * \brief This files defines all types used by the IFX HAL and libraries
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *

@@ -3,7 +3,7 @@
  * \brief STM  basic functionality
  * \ingroup IfxLld_Stm
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -115,6 +115,8 @@
 /******************************************************************************/
 
 #include "_Impl/IfxStm_cfg.h"
+#include "Scu/Std/IfxScuCcu.h"
+#include "Src/Std/IfxSrc.h"
 
 /******************************************************************************/
 /*--------------------------------Enumerations--------------------------------*/
@@ -213,6 +215,15 @@ typedef enum
     IfxStm_ComparatorSize_31Bits = 30,  /**< \brief Size of compare value to compare with timer: 31 bits */
     IfxStm_ComparatorSize_32Bits = 31   /**< \brief Size of compare value to compare with timer: 32 bits */
 } IfxStm_ComparatorSize;
+
+/** \brief Enable/disable the sensitivity of the module to sleep signal\n
+ * Definition in Ifx_STM.CLC.B.EDIS
+ */
+typedef enum
+{
+    IfxStm_SleepMode_enable  = 0, /**< \brief enables sleep mode */
+    IfxStm_SleepMode_disable = 1  /**< \brief disables sleep mode */
+} IfxStm_SleepMode;
 
 /** \} */
 
@@ -397,6 +408,27 @@ IFX_EXTERN void IfxStm_initCompareConfig(IfxStm_CompareConfig *config);
 /** \} */
 
 /******************************************************************************/
+/*-------------------------Inline Function Prototypes-------------------------*/
+/******************************************************************************/
+
+/**
+ * \param stm pointer STM registers
+ * \param mode mode selection (enable/ disable)
+ * \return None
+ */
+IFX_INLINE void IfxStm_setSleepMode(Ifx_STM *stm, IfxStm_SleepMode mode);
+
+/******************************************************************************/
+/*-------------------------Global Function Prototypes-------------------------*/
+/******************************************************************************/
+
+/**
+ * \param stm pointer to STM registers
+ * \return None
+ */
+IFX_EXTERN void IfxStm_resetModule(Ifx_STM *stm);
+
+/******************************************************************************/
 /*---------------------Inline Function Implementations------------------------*/
 /******************************************************************************/
 
@@ -502,6 +534,15 @@ IFX_INLINE void IfxStm_increaseCompare(Ifx_STM *stm, IfxStm_Comparator comparato
 IFX_INLINE void IfxStm_updateCompare(Ifx_STM *stm, IfxStm_Comparator comparator, uint32 ticks)
 {
     stm->CMP[comparator].B.CMPVAL = ticks;
+}
+
+
+IFX_INLINE void IfxStm_setSleepMode(Ifx_STM *stm, IfxStm_SleepMode mode)
+{
+    uint16 passwd = IfxScuWdt_getCpuWatchdogPassword();
+    IfxScuWdt_clearCpuEndinit(passwd);
+    stm->CLC.B.EDIS = mode;
+    IfxScuWdt_setCpuEndinit(passwd);
 }
 
 

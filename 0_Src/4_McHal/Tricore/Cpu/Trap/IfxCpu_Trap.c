@@ -3,7 +3,7 @@
  * \brief This file contains the APIs for Trap related functions.
  *
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2012 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -54,6 +54,15 @@
 #ifndef IFX_CFG_CPU_TRAP_SYSCALL_CPU2_HOOK
 #   define IFX_CFG_CPU_TRAP_SYSCALL_CPU2_HOOK(trapWatch) /**< By default macro is empty*/
 #endif
+#ifndef IFX_CFG_CPU_TRAP_SYSCALL_CPU3_HOOK
+#   define IFX_CFG_CPU_TRAP_SYSCALL_CPU3_HOOK(trapWatch) /**< By default macro is empty*/
+#endif
+#ifndef IFX_CFG_CPU_TRAP_SYSCALL_CPU4_HOOK
+#   define IFX_CFG_CPU_TRAP_SYSCALL_CPU4_HOOK(trapWatch) /**< By default macro is empty*/
+#endif
+#ifndef IFX_CFG_CPU_TRAP_SYSCALL_CPU5_HOOK
+#   define IFX_CFG_CPU_TRAP_SYSCALL_CPU5_HOOK(trapWatch) /**< By default macro is empty*/
+#endif
 
 /*******************************************************************************
 **                      variables                                     **
@@ -63,12 +72,10 @@ IfxCpu_Trap trapWatch;
 /*******************************************************************************
 **                      Function definitions                          **
 *******************************************************************************/
-
-
-
 IFX_INLINE IfxCpu_Trap IfxCpu_Trap_extractTrapInfo(uint8 trapClass, uint32 tin)
 {
     IfxCpu_Trap trapInfo;
+    trapInfo.tAddr  = (unsigned int)__getA11();
     trapInfo.tClass = trapClass;
     trapInfo.tId    = tin;
     trapInfo.tCpu   = IfxCpu_getCoreId();
@@ -154,6 +161,30 @@ void IfxCpu_Trap_systemCall_Cpu2(uint32 tin)
 }
 
 
+void IfxCpu_Trap_systemCall_Cpu3(uint32 tin)
+{
+    trapWatch = IfxCpu_Trap_extractTrapInfo(IfxCpu_Trap_Class_systemCall, tin);
+    IFX_CFG_CPU_TRAP_SYSCALL_CPU3_HOOK(trapWatch);
+    __asm("rfe");
+}
+
+
+void IfxCpu_Trap_systemCall_Cpu4(uint32 tin)
+{
+    trapWatch = IfxCpu_Trap_extractTrapInfo(IfxCpu_Trap_Class_systemCall, tin);
+    IFX_CFG_CPU_TRAP_SYSCALL_CPU4_HOOK(trapWatch);
+    __asm("rfe");
+}
+
+
+void IfxCpu_Trap_systemCall_Cpu5(uint32 tin)
+{
+    trapWatch = IfxCpu_Trap_extractTrapInfo(IfxCpu_Trap_Class_systemCall, tin);
+    IFX_CFG_CPU_TRAP_SYSCALL_CPU5_HOOK(trapWatch);
+    __asm("rfe");
+}
+
+
 void IfxCpu_Trap_nonMaskableInterrupt(uint32 tin)
 {
     trapWatch = IfxCpu_Trap_extractTrapInfo(IfxCpu_Trap_Class_nonMaskableInterrupt, tin);
@@ -189,7 +220,7 @@ void IfxCpu_Trap_vectorTable0(void)
 }
 
 
-#if IFXCPU_COUNT >= 2
+#if IFXCPU_NUM_MODULES >= 2
 #if defined(__GNUC__)
 #pragma section
 #pragma section ".traptab_cpu1" awx
@@ -213,10 +244,11 @@ void IfxCpu_Trap_vectorTable1(void)
     IfxCpu_Tsr_CallTSR(IfxCpu_Trap_systemCall_Cpu1);
     IfxCpu_Tsr_CallTSR(IfxCpu_Trap_nonMaskableInterrupt);
 }
+
+
 #endif
 
-
-#if IFXCPU_COUNT >= 3
+#if IFXCPU_NUM_MODULES >= 3
 #if defined(__GNUC__)
 #pragma section
 #pragma section ".traptab_cpu2" awx
@@ -240,8 +272,93 @@ void IfxCpu_Trap_vectorTable2(void)
     IfxCpu_Tsr_CallTSR(IfxCpu_Trap_systemCall_Cpu2);
     IfxCpu_Tsr_CallTSR(IfxCpu_Trap_nonMaskableInterrupt);
 }
+
+
 #endif
 
+#if IFXCPU_NUM_MODULES >= 4
+#if defined(__GNUC__)
+#pragma section
+#pragma section ".traptab_cpu3" awx
+#endif
+#if defined(__DCC__)
+#pragma section
+#pragma section CODE ".traptab_cpu3" X
+#endif
+#if defined(__TASKING__)
+#pragma section code "traptab_cpu3"
+#endif
+
+void IfxCpu_Trap_vectorTable3(void)
+{
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_memoryManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_internalProtectionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_instructionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_contextManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_busError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_assertion);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_systemCall_Cpu3);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_nonMaskableInterrupt);
+}
+
+
+#endif
+
+#if IFXCPU_NUM_MODULES >= 5
+#if defined(__GNUC__)
+#pragma section
+#pragma section ".traptab_cpu4" awx
+#endif
+#if defined(__DCC__)
+#pragma section
+#pragma section CODE ".traptab_cpu4" X
+#endif
+#if defined(__TASKING__)
+#pragma section code "traptab_cpu4"
+#endif
+
+void IfxCpu_Trap_vectorTable4(void)
+{
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_memoryManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_internalProtectionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_instructionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_contextManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_busError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_assertion);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_systemCall_Cpu4);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_nonMaskableInterrupt);
+}
+
+
+#endif
+
+#if IFXCPU_NUM_MODULES >= 6
+#if defined(__GNUC__)
+#pragma section
+#pragma section ".traptab_cpu5" awx
+#endif
+#if defined(__DCC__)
+#pragma section
+#pragma section CODE ".traptab_cpu5" X
+#endif
+#if defined(__TASKING__)
+#pragma section code "traptab_cpu5"
+#endif
+
+void IfxCpu_Trap_vectorTable5(void)
+{
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_memoryManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_internalProtectionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_instructionError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_contextManagementError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_busError);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_assertion);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_systemCall_Cpu5);
+    IfxCpu_Tsr_CallTSR(IfxCpu_Trap_nonMaskableInterrupt);
+}
+
+
+#endif
 
 #if defined(__GNUC__)
 #pragma section

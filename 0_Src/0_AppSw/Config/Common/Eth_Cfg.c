@@ -27,7 +27,7 @@
 #include "Interrupts_Cfg.h"
 
 /** \brief ETH pin mapping for this application */
-const IfxEth_PortPins cfg_Eth_pins = {
+const IfxEth_RmiiPins cfg_Eth_pins = {
     .crsDiv = &IfxEth_CRSDVA_P11_11_IN,
     .refClk = &IfxEth_REFCLK_P11_12_IN,
     .rxd0   = &IfxEth_RXD0_P11_10_IN,
@@ -42,13 +42,29 @@ const IfxEth_PortPins cfg_Eth_pins = {
 /** \brief ETH configuration for this application
  * \ingroup configuration_comm_eth
  */
-const IfxEth_Config cfg_Eth = {
+#if 0
+const IfxEth_Config cfg_Eth_old = {
     .macAddress  = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},
     .phyInit     = &IfxEth_Phy_Pef7071_init,
     .phyLink     = &IfxEth_Phy_Pef7071_link,
     .portPins    = &cfg_Eth_pins,
     .isrPriority = ISR_PRIORITY_ETH,
     .isrProvider = ISR_PROVIDER_ETH
+};
+#endif
+
+const IfxEth_Config cfg_Eth = {
+	.macAddress  = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},
+	.phyInit = &IfxEth_Phy_Pef7071_init,
+	.phyLink = &IfxEth_Phy_Pef7071_link,
+	.phyInterfaceMode = IfxEth_PhyInterfaceMode_rmii,
+	.rmiiPins = &cfg_Eth_pins,
+	.miiPins = NULL_PTR,
+	.isrPriority = ISR_PRIORITY_ETH,
+	.isrProvider = ISR_PROVIDER_ETH,
+	.ethSfr = NULL_PTR,
+	.rxDescr = &IfxEth_rxDescr,
+	.txDescr = &IfxEth_txDescr,
 };
 
 #pragma section ".bss_cpu0" awc0

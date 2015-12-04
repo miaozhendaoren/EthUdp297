@@ -3,7 +3,7 @@
  * \brief ETH  basic functionality
  * \ingroup IfxLld_Eth
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -35,6 +35,8 @@
  * \ingroup IfxLld_Eth_Std
  * \defgroup IfxLld_Eth_Std_Initialisation Initialisation Functions
  * \ingroup IfxLld_Eth_Std
+ * \defgroup IfxLld_Eth_Std_Enum Enumerations
+ * \ingroup IfxLld_Eth_Std
  */
 
 #ifndef IFXET_H
@@ -46,10 +48,13 @@
 
 #include "_Impl/IfxEth_cfg.h"
 #include "Cpu/Std/Ifx_Types.h"
-#include "IfxEth_reg.h"
-#include "Src/Std/IfxSrc.h"
+#include "_Reg/IfxEth_reg.h"
+#include "_Reg/IfxEth_bf.h"
 #include "_PinMap/IfxEth_PinMap.h"
+#include "Src/Std/IfxSrc.h"
+#include "Scu/Std/IfxScuWdt.h"
 #include "_Utilities/Ifx_Assert.h"
+#include "Cpu/Std/IfxCpu.h"
 
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
@@ -57,7 +62,9 @@
 
 /** \brief Size of one ethernet frame buffer
  */
+#ifndef IFXETH_RTX_BUFFER_SIZE
 #define IFXETH_RTX_BUFFER_SIZE   1536
+#endif
 
 #ifndef IFXETH_TX_BUFFER_BY_USER
 #define IFXETH_TX_BUFFER_BY_USER 0
@@ -69,20 +76,26 @@
 
 /** \brief Rx buffers (ring mode)
  */
+#ifndef IFXETH_MAX_RX_BUFFERS
 #define IFXETH_MAX_RX_BUFFERS    8
+#endif
 
 /** \brief Tx buffers (ring mode)
  */
+#ifndef IFXETH_MAX_TX_BUFFERS
 #define IFXETH_MAX_TX_BUFFERS    16
+#endif
 
 /** \brief 4 DWORDS (16 bytes)
  */
 #define IFXETH_DESCR_SIZE        4
 
 /******************************************************************************/
-/*-------------------------------Enumerations---------------------------------*/
+/*--------------------------------Enumerations--------------------------------*/
 /******************************************************************************/
 
+/** \addtogroup IfxLld_Eth_Std_Enum
+ * \{ */
 typedef enum
 {
     IfxEth_ChecksumMode_bypass            = 0,
@@ -91,10 +104,50 @@ typedef enum
     IfxEth_ChecksumMode_tcpUdpIcmpFull    = 3
 } IfxEth_ChecksumMode;
 
+/** \brief External Phy Interface RMII Mode
+ */
+typedef enum
+{
+    IfxEth_PhyInterfaceMode_mii,  /**< \brief MII mode */
+    IfxEth_PhyInterfaceMode_rmii  /**< \brief RMII mode */
+} IfxEth_PhyInterfaceMode;
+
+/** \brief indicates the Receive DMA FSM state
+ */
+typedef enum
+{
+    IfxEth_ReceiveProcessState_reset,           /**< \brief Stopped: Reset or Stop Receive Command issued */
+    IfxEth_ReceiveProcessState_fetching,        /**< \brief Running: Fetching Receive Transfer Descriptor */
+    IfxEth_ReceiveProcessState_none,            /**< \brief Reserved for future use */
+    IfxEth_ReceiveProcessState_waiting,         /**< \brief Running: Waiting for receive packet */
+    IfxEth_ReceiveProcessState_suspended,       /**< \brief Suspended: Receive Descriptor Unavailable */
+    IfxEth_ReceiveProcessState_closing,         /**< \brief Running: Closing Receive Descriptor */
+    IfxEth_ReceiveProcessState_timestampWrite,  /**< \brief TIME_STAMP write state */
+    IfxEth_ReceiveProcessState_transfering      /**< \brief Running: Transferring the receive packet data from receive buffer to host memory */
+} IfxEth_ReceiveProcessState;
+
+/** \brief indicates the Transmit DMA FSM state
+ */
+typedef enum
+{
+    IfxEth_TransmitProcessState_reset,           /**< \brief Stopped; Reset or Stop Transmit Command issued */
+    IfxEth_TransmitProcessState_fetching,        /**< \brief Running; Fetching Transmit Transfer Descriptor */
+    IfxEth_TransmitProcessState_waiting,         /**< \brief Running; Waiting for status */
+    IfxEth_TransmitProcessState_reading,         /**< \brief Running; Reading Data from host memory buffer and queuing it to transmit buffer (Tx FIFO) */
+    IfxEth_TransmitProcessState_timestampWrite,  /**< \brief TIME_STAMP write state */
+    IfxEth_TransmitProcessState_none,            /**< \brief Reserved for future use */
+    IfxEth_TransmitProcessState_suspended,       /**< \brief Suspended; Transmit Descriptor Unavailable or Transmit Buffer Underflow */
+    IfxEth_TransmitProcessState_closing          /**< \brief Running; Closing Transmit Descriptor */
+} IfxEth_TransmitProcessState;
+
+/** \} */
+
 /******************************************************************************/
 /*-----------------------------Data Structures--------------------------------*/
 /******************************************************************************/
 
+/** \addtogroup IfxLld_Eth_Std_DataStructures
+ * \{ */
 /** \brief Structure for Alternate/Enhanced RX descriptor DWORD 0 Bit field access
  */
 typedef struct
@@ -175,6 +228,8 @@ typedef struct
     uint32 TBS2 : 13;   /**< \brief Transmit Buffer 2 Size */
     uint32 resv2 : 3;   /**< \brief (reserved) */
 } IfxEth_AltTxDescr1_Bits;
+
+/** \} */
 
 /** \addtogroup IfxLld_Eth_Std_Unions
  * \{ */
@@ -264,11 +319,35 @@ typedef struct
 
 /** \} */
 
-/** \brief Port pins configuration
+/** \addtogroup IfxLld_Eth_Std_DataStructures
+ * \{ */
+/** \brief Port pins for MII mode configuration
  */
 typedef struct
 {
-    IfxEth_Crsdv_In   *crsDiv;     /**< \brief pointer to CRSDIV input pin configtring_here */
+    IfxEth_Crs_In   *crs;       /**< \brief pointer to CRS input pin config */
+    IfxEth_Col_In   *col;       /**< \brief pointer to COL input pin config */
+    IfxEth_Txclk_In *txClk;     /**< \brief Pointer to TXCLK input pin config */
+    IfxEth_Rxclk_In *rxClk;     /**< \brief Pointer to RXCLK input pin config */
+    IfxEth_Rxdv_In  *rxDv;      /**< \brief Pointer to RXDV input pin config */
+    IfxEth_Rxer_In  *rxEr;      /**< \brief Pointer to RXER input pin config */
+    IfxEth_Rxd_In   *rxd0;      /**< \brief Pointer to RXD0 input pin config */
+    IfxEth_Rxd_In   *rxd1;      /**< \brief Pointer to RXD1 input pin config */
+    IfxEth_Rxd_In   *rxd2;      /**< \brief Pointer to RXD2 input pin config */
+    IfxEth_Rxd_In   *rxd3;      /**< \brief Pointer to RXD3 input pin config */
+    IfxEth_Txen_Out *txEn;      /**< \brief Pointer to TXEN output pin config */
+    IfxEth_Txer_Out *txEr;      /**< \brief Pointer to TXER output pin config */
+    IfxEth_Txd_Out  *txd0;      /**< \brief Pointer to TXD0 output pin config */
+    IfxEth_Txd_Out  *txd1;      /**< \brief Pointer to TXD1 output pin config */
+    IfxEth_Txd_Out  *txd2;      /**< \brief Pointer to TXD2 output pin config */
+    IfxEth_Txd_Out  *txd3;      /**< \brief Pointer to TXD3 output pin config */
+} IfxEth_MiiPins;
+
+/** \brief Port pins for RMII mode configuration
+ */
+typedef struct
+{
+    IfxEth_Crsdv_In   *crsDiv;     /**< \brief pointer to CRSDIV input pin config */
     IfxEth_Refclk_In  *refClk;     /**< \brief Pointer to REFCLK input pin config */
     IfxEth_Rxd_In     *rxd0;       /**< \brief Pointer to RXD0 input pin config */
     IfxEth_Rxd_In     *rxd1;       /**< \brief Pointer to RXD1 input pin config */
@@ -277,24 +356,12 @@ typedef struct
     IfxEth_Txd_Out    *txd0;       /**< \brief Pointer to TXD0 output pin config */
     IfxEth_Txd_Out    *txd1;       /**< \brief Pointer to TXD1 output pin config */
     IfxEth_Txen_Out   *txEn;       /**< \brief Pointer to TXEN output pin config */
-} IfxEth_PortPins;
-
-/** \addtogroup IfxLld_Eth_Std_DataStructures
- * \{ */
-/** \brief ETH configuration structure
- */
-typedef struct
-{
-    uint8 macAddress[6];                         /**< \brief MAC address for the ethernet, should be unique in the network */
-    uint32 (*phyInit)(void);                     /**< \brief Pointer to the transceiver init function */
-    boolean (*phyLink)(void);                    /**< \brief Pointer to the transceiver link function */
-    const IfxEth_PortPins *portPins;             /**< \brief Pointer to port pins configuration */
-    Ifx_Priority           isrPriority;          /**< \brief Interrupt service priority */
-    IfxSrc_Tos             isrProvider;          /**< \brief Interrupt service provider */
-} IfxEth_Config;
+} IfxEth_RmiiPins;
 
 /** \} */
 
+/** \addtogroup IfxLld_Eth_Std_Unions
+ * \{ */
 typedef union
 {
     IfxEth_RxDescr items[IFXETH_MAX_RX_BUFFERS];
@@ -306,6 +373,29 @@ typedef union
     IfxEth_TxDescr items[IFXETH_MAX_TX_BUFFERS];
     uint32         U[IFXETH_MAX_TX_BUFFERS][IFXETH_DESCR_SIZE];
 } IfxEth_TxDescrList;
+
+/** \} */
+
+/** \addtogroup IfxLld_Eth_Std_DataStructures
+ * \{ */
+/** \brief ETH configuration structure
+ */
+typedef struct
+{
+    uint8 macAddress[6];                          /**< \brief MAC address for the ethernet, should be unique in the network */
+    uint32 (*phyInit)(void);                      /**< \brief Pointer to the transceiver init function */
+    boolean (*phyLink)(void);                     /**< \brief Pointer to the transceiver link function */
+    IfxEth_PhyInterfaceMode phyInterfaceMode;     /**< \brief Phy Interface mode */
+    const IfxEth_RmiiPins  *rmiiPins;             /**< \brief Pointer to port pins configuration of RMII mode */
+    const IfxEth_MiiPins   *miiPins;              /**< \brief Pointer to port pins configuration of MII mode */
+    Ifx_Priority            isrPriority;          /**< \brief Interrupt service priority */
+    IfxSrc_Tos              isrProvider;          /**< \brief Interrupt service provider */
+    Ifx_ETH                *ethSfr;               /**< \brief Pointer to register base */
+    IfxEth_RxDescrList     *rxDescr;              /**< \brief pointer to RX descriptor RAM */
+    IfxEth_TxDescrList     *txDescr;              /**< \brief pointer to TX descriptor RAM */
+} IfxEth_Config;
+
+/** \} */
 
 /** \addtogroup IfxLld_Eth_Std_DataStructures
  * \{ */
@@ -327,6 +417,7 @@ typedef struct
     IfxEth_TxDescrList *txDescr;        /**< \brief pointer to TX descriptor RAM */
     IfxEth_RxDescr     *pRxDescr;
     IfxEth_TxDescr     *pTxDescr;
+    Ifx_ETH            *ethSfr;         /**< \brief Pointer to register base */
 } IfxEth;
 
 /** \brief Structure for RX descriptor DWORD 0 Bit field access
@@ -416,31 +507,20 @@ typedef struct
 /*-------------------------Inline Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief Waits for one TX buffer becomes available
- * \param eth ETH driver structure
- * retval non NULL_PTR TX buffer is available at the address pointed by the returned value
- * retval NULL_PTR TX buffer is busy.
- */
-IFX_INLINE void *IfxEth_waitTransmitBuffer(IfxEth *eth);
-
-/** \brief Sets the MAC address
- * \param eth ETH driver structure
- * \param loopbackMode loopback mode enable/disbale
+/** \brief Set buffer of an RX descriptor
+ * \param descr descr Pointer to an RX descriptor
  * \return None
  */
-IFX_INLINE void IfxEth_setLoopbackMode(IfxEth *eth, boolean loopbackMode);
+IFX_INLINE void IfxEth_RxDescr_setBuffer(IfxEth_RxDescr *descr, void *buffer);
 
-/** \brief Clear transmit interrupt request
- * \param eth ETH driver structure
- * \return None
+/** \brief Get pointer to next TX descriptor
+ * \param descr descr Pointer to a TX descriptor
  */
-IFX_INLINE void IfxEth_clearTxInterrupt(IfxEth *eth);
+IFX_INLINE IfxEth_TxDescr *IfxEth_TxDescr_getNext(IfxEth_TxDescr *descr);
 
-/** \brief Clear receive interrupt request
- * \param eth ETH driver structure
- * \return None
+/** \brief Return TRUE if a TX descriptor is available for setup
  */
-IFX_INLINE void IfxEth_clearRxInterrupt(IfxEth *eth);
+IFX_INLINE boolean IfxEth_TxDescr_isAvailable(IfxEth_TxDescr *descr);
 
 /** \brief Set buffer of a TX descriptor
  * \param descr Entdescr Pointer to a TX descriptorer_String_here
@@ -448,37 +528,74 @@ IFX_INLINE void IfxEth_clearRxInterrupt(IfxEth *eth);
  */
 IFX_INLINE void IfxEth_TxDescr_setBuffer(IfxEth_TxDescr *descr, void *buffer);
 
-/** \brief Return TRUE if a TX descriptor is available for setup
- */
-IFX_INLINE boolean IfxEth_TxDescr_isAvailable(IfxEth_TxDescr *descr);
-
-/** \brief Get pointer to next TX descriptor
- * \param descr descr Pointer to a TX descriptor
- */
-IFX_INLINE IfxEth_TxDescr *IfxEth_TxDescr_getNext(IfxEth_TxDescr *descr);
-
-/** \brief Set buffer of an RX descriptor
- * \param descr descr Pointer to an RX descriptor
+/** \brief Applies the Software Reset
+ * \param eth ETH driver structure
  * \return None
  */
-IFX_INLINE void IfxEth_RxDescr_setBuffer(IfxEth_RxDescr *descr, void *buffer);
+IFX_INLINE void IfxEth_applySoftwareReset(IfxEth *eth);
+
+/** \brief Clear receive interrupt request
+ * \param eth ETH driver structure
+ * \return None
+ */
+IFX_INLINE void IfxEth_clearRxInterrupt(IfxEth *eth);
+
+/** \brief Clear transmit interrupt request
+ * \param eth ETH driver structure
+ * \return None
+ */
+IFX_INLINE void IfxEth_clearTxInterrupt(IfxEth *eth);
+
+/** \brief Returns the status of Software Reset
+ * \param eth ETH driver structure
+ * \return Status
+ */
+IFX_INLINE boolean IfxEth_isSoftwareResetDone(IfxEth *eth);
+
+/** \brief Sets the loopback mode
+ * \param eth ETH driver structure
+ * \param loopbackMode loopback mode enable/disbale
+ * \return None
+ */
+IFX_INLINE void IfxEth_setLoopbackMode(IfxEth *eth, boolean loopbackMode);
+
+/** \brief Sets the Phy Interface mode
+ * \param eth ETH driver structure
+ * \param mode Phy interface mode
+ * \return None
+ */
+IFX_INLINE void IfxEth_setPhyInterfaceMode(IfxEth *eth, IfxEth_PhyInterfaceMode mode);
+
+/** \brief Sets receive descriptor address
+ * \param eth pointer to the ethernet module
+ * \param address Address
+ * \return None
+ */
+IFX_INLINE void IfxEth_setReceiveDescriptorAddress(Ifx_ETH *eth, void *address);
+
+/** \brief Sets transmit descriptor address
+ * \param eth pointer to the ethernet module
+ * \param address Address
+ * \return None
+ */
+IFX_INLINE void IfxEth_setTransmitDescriptorAddress(Ifx_ETH *eth, void *address);
+
+/** \brief Waits for one TX buffer becomes available
+ * \param eth ETH driver structure
+ * retval non NULL_PTR TX buffer is available at the address pointed by the returned value
+ * retval NULL_PTR TX buffer is busy.
+ */
+IFX_INLINE void *IfxEth_waitTransmitBuffer(IfxEth *eth);
 
 /******************************************************************************/
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief Start the receiver functions
+/** \brief Free the receive buffer, enabling it for the further reception
  * \param eth ETH driver structure
  * \return None
  */
-IFX_EXTERN void IfxEth_startReceiver(IfxEth *eth);
-
-/** \brief Sets the MAC address
- * \param eth ETH driver structure
- * \param macAddress MAC address
- * \return None
- */
-IFX_EXTERN void IfxEth_setMacAddress(IfxEth *eth, const uint8 *macAddress);
+IFX_EXTERN void IfxEth_freeReceiveBuffer(IfxEth *eth);
 
 /** \brief Request to send the transmit buffer
  *
@@ -489,11 +606,28 @@ IFX_EXTERN void IfxEth_setMacAddress(IfxEth *eth, const uint8 *macAddress);
  */
 IFX_EXTERN void IfxEth_sendTransmitBuffer(IfxEth *eth, uint16 len);
 
-/** \brief Free the receive buffer, enabling it for the further reception
+/** \brief Sets the MAC address
+ * \param eth ETH driver structure
+ * \param macAddress MAC address
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setMacAddress(IfxEth *eth, const uint8 *macAddress);
+
+/** \brief Start the receiver functions
  * \param eth ETH driver structure
  * \return None
  */
-IFX_EXTERN void IfxEth_freeReceiveBuffer(IfxEth *eth);
+IFX_EXTERN void IfxEth_startReceiver(IfxEth *eth);
+
+/** \brief writes the header format into buffrer
+ * \param eth ETH driver structure
+ * \param txBuffer pointer to tx buffer
+ * \param destinationAddress pointer to destination address
+ * \param sourceAddress pointer to source address
+ * \param packetSize size of the packet
+ * \return None
+ */
+IFX_EXTERN void IfxEth_writeHeader(IfxEth *eth, uint8 *txBuffer, uint8 *destinationAddress, uint8 *sourceAddress, uint32 packetSize);
 
 /** \} */
 
@@ -509,46 +643,69 @@ IFX_EXTERN void IfxEth_freeReceiveBuffer(IfxEth *eth);
  */
 IFX_INLINE IfxEth_RxDescr *IfxEth_RxDescr_getNext(IfxEth_RxDescr *descr);
 
+/** \brief release RX descriptor
+ * \return None
+ */
+IFX_INLINE void IfxEth_RxDescr_release(IfxEth_RxDescr *descr);
+
+/** \brief Release a TX descriptor for transmit queue
+ * \param descr Enter_String_herdescr Pointer to a TX descriptore
+ * \return None
+ */
+IFX_INLINE void IfxEth_TxDescr_release(IfxEth_TxDescr *descr);
+
 /** \brief Get pointer to actual RX descriptor
  * \param eth eth ETH driver structure
  */
 IFX_INLINE IfxEth_RxDescr *IfxEth_getActualRxDescriptor(IfxEth *eth);
 
-/** \brief Shuffle to next TX descriptor
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_INLINE void IfxEth_shuffleTxDescriptor(IfxEth *eth);
-
-/** \brief Shuffle to next RX descriptor
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_INLINE void IfxEth_shuffleRxDescriptor(IfxEth *eth);
-
-/** \brief Checks whether transmit interrupt is requested
- * \param eth ETH driver structure
- * \return TRUE/FALSE
- */
-IFX_INLINE boolean IfxEth_isTxInterrupt(IfxEth *eth);
-
-/** \brief Checks whether receive interrupt is requested
- * \param eth ETH driver structure
- * \return TRUE/FALSE
- */
-IFX_INLINE boolean IfxEth_isRxInterrupt(IfxEth *eth);
-
-/** \brief Checks whether one or more RX data is available
- * \param eth ETH driver structure
- * \return retval TRUE one or more RX data is available
- * retval FALSE no RX data is available
- */
-IFX_INLINE boolean IfxEth_isRxDataAvailable(IfxEth *eth);
-
 /**
- * \param eth pointer to ETH driver structure
  */
-IFX_INLINE boolean IfxEth_isRxChecksumError(IfxEth *eth);
+IFX_INLINE uint32 IfxEth_getActualRxIndex(IfxEth *eth);
+
+/** \brief Get pointer to actual TX descriptor
+ * \param eth eth ETH driver structure
+ */
+IFX_INLINE IfxEth_TxDescr *IfxEth_getActualTxDescriptor(IfxEth *eth);
+
+/** \brief Get pointer to base RX descriptor
+ * \param eth eth ETH driver structure
+ */
+IFX_INLINE IfxEth_RxDescr *IfxEth_getBaseRxDescriptor(IfxEth *eth);
+
+/** \brief Get pointer to base TX descriptor
+ * \param eth eth ETH driver structure
+ */
+IFX_INLINE IfxEth_TxDescr *IfxEth_getBaseTxDescriptor(IfxEth *eth);
+
+/** \brief returns the status of th eloopback mode
+ * \param eth ETH driver structure
+ * \return Loop back mode status (TRUE / FALSE)
+ */
+IFX_INLINE boolean IfxEth_getLoopbackMode(IfxEth *eth);
+
+/** \brief Returns pointer to the MAC address configured for this ETH
+ * \param eth ETH driver structure
+ */
+IFX_INLINE void *IfxEth_getMacAddressPointer(IfxEth *eth);
+
+/** \brief returns the Receive Process State
+ * \param eth ETH driver structure
+ * \return Receive Process State
+ */
+IFX_INLINE IfxEth_ReceiveProcessState IfxEth_getReceiveProcessState(IfxEth *eth);
+
+/** \brief Returns length of the oldest available RX data
+ * \param eth ETH driver structure
+ * \return Data length
+ */
+IFX_INLINE uint16 IfxEth_getRxDataLength(IfxEth *eth);
+
+/** \brief returns the Transmit Process State
+ * \param eth ETH driver structure
+ * \return Transmit Process State
+ */
+IFX_INLINE IfxEth_TransmitProcessState IfxEth_getTransmitProcessState(IfxEth *eth);
 
 /** \brief Checks whether physical connection is active
  * \param eth ETH driver structure
@@ -557,107 +714,56 @@ IFX_INLINE boolean IfxEth_isRxChecksumError(IfxEth *eth);
  */
 IFX_INLINE boolean IfxEth_isLinkActive(IfxEth *eth);
 
-/** \brief Returns length of the oldest available RX data
- * \param eth ETH driver structure
- * \return Data length
- */
-IFX_INLINE uint16 IfxEth_getRxDataLength(IfxEth *eth);
-
-/** \brief Returns pointer to the MAC address configured for this ETH
- * \param eth ETH driver structure
- */
-IFX_INLINE void *IfxEth_getMacAddressPointer(IfxEth *eth);
-
-/** \brief Get a free transmit buffer
- * \param eth ETH driver structure
- * \return Loop back mode status (TRUE / FALSE)
- */
-IFX_INLINE boolean IfxEth_getLoopbackMode(IfxEth *eth);
-
-/** \brief Get pointer to base TX descriptor
- * \param eth eth ETH driver structure
- */
-IFX_INLINE IfxEth_TxDescr *IfxEth_getBaseTxDescriptor(IfxEth *eth);
-
-/** \brief Get pointer to base RX descriptor
- * \param eth eth ETH driver structure
- */
-IFX_INLINE IfxEth_RxDescr *IfxEth_getBaseRxDescriptor(IfxEth *eth);
-
-/** \brief Get pointer to actual TX descriptor
- * \param eth eth ETH driver structure
- */
-IFX_INLINE IfxEth_TxDescr *IfxEth_getActualTxDescriptor(IfxEth *eth);
-
 /**
+ * \param eth pointer to ETH driver structure
  */
-IFX_INLINE uint32 IfxEth_getActualRxIndex(IfxEth *eth);
+IFX_INLINE boolean IfxEth_isRxChecksumError(IfxEth *eth);
 
-/** \brief Release a TX descriptor for transmit queue
- * \param descr Enter_String_herdescr Pointer to a TX descriptore
+/** \brief Checks whether one or more RX data is available
+ * \param eth ETH driver structure
+ * \return retval TRUE one or more RX data is available
+ * retval FALSE no RX data is available
+ */
+IFX_INLINE boolean IfxEth_isRxDataAvailable(IfxEth *eth);
+
+/** \brief Checks whether receive interrupt is requested
+ * \param eth ETH driver structure
+ * \return TRUE/FALSE
+ */
+IFX_INLINE boolean IfxEth_isRxInterrupt(IfxEth *eth);
+
+/** \brief Checks whether transmit interrupt is requested
+ * \param eth ETH driver structure
+ * \return TRUE/FALSE
+ */
+IFX_INLINE boolean IfxEth_isTxInterrupt(IfxEth *eth);
+
+/** \brief reads the status of all flags
+ * \param eth ETH driver structure
  * \return None
  */
-IFX_INLINE void IfxEth_TxDescr_release(IfxEth_TxDescr *descr);
+IFX_INLINE void IfxEth_readAllFlags(IfxEth *eth);
 
-/** \brief release RX descriptor
+/** \brief Shuffle to next RX descriptor
+ * \param eth eth ETH driver structure
  * \return None
  */
-IFX_INLINE void IfxEth_RxDescr_release(IfxEth_RxDescr *descr);
+IFX_INLINE void IfxEth_shuffleRxDescriptor(IfxEth *eth);
+
+/** \brief Shuffle to next TX descriptor
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_INLINE void IfxEth_shuffleTxDescriptor(IfxEth *eth);
 
 /******************************************************************************/
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief Wakeup the transmitter functions
- * \param eth eth ETH driver structure
+/** \brief Enable ETH Module
  * \return None
  */
-IFX_EXTERN void IfxEth_wakeupTransmitter(IfxEth *eth);
-
-/** \brief Wakeup the receiver functions
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_EXTERN void IfxEth_wakeupReceiver(IfxEth *eth);
-
-/** \brief Stop the transmitter functions
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_EXTERN void IfxEth_stopTransmitter(IfxEth *eth);
-
-/** \brief Start the transmitter functions
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_EXTERN void IfxEth_startTransmitter(IfxEth *eth);
-
-/** \brief Set up checksum Engine
- * \param eth eth ETH driver structure
- * \return None
- */
-IFX_EXTERN void IfxEth_setupChecksumEngine(IfxEth *eth, IfxEth_ChecksumMode mode);
-
-/**
- * \param eth pointer to ETH driver structure
- * \param len length of buffer
- * \return None
- */
-IFX_EXTERN void IfxEth_setAndSendTransmitBuffer(IfxEth *eth, void *buffer, uint16 len);
-
-/** \brief Reads the MAC address from module register
- * \param eth ETH driver structure
- * \param macAddress MAC address
- * \return None
- */
-IFX_EXTERN void IfxEth_readMacAddress(IfxEth *eth, uint8 *macAddress);
-
-/** \brief Get a free transmit buffer
- * \param eth ETH driver structure
- * \return retval NULL_PTR no free transmit buffer is available
- * retval !NULL_PTR a free transmit buffer is available
- */
-IFX_EXTERN void *IfxEth_getTransmitBuffer(IfxEth *eth);
+IFX_EXTERN void IfxEth_enableModule(void);
 
 /** \brief Gets receive buffer\n
  * note: IfxEth_freeReceiveBuffer() shall be called after the data from the RX buffer has been processed
@@ -667,10 +773,56 @@ IFX_EXTERN void *IfxEth_getTransmitBuffer(IfxEth *eth);
  */
 IFX_EXTERN void *IfxEth_getReceiveBuffer(IfxEth *eth);
 
-/** \brief Enable ETH Module
+/** \brief Get a free transmit buffer
+ * \param eth ETH driver structure
+ * \return retval NULL_PTR no free transmit buffer is available
+ * retval !NULL_PTR a free transmit buffer is available
+ */
+IFX_EXTERN void *IfxEth_getTransmitBuffer(IfxEth *eth);
+
+/** \brief Reads the MAC address from module register
+ * \param eth ETH driver structure
+ * \param macAddress MAC address
  * \return None
  */
-IFX_EXTERN void IfxEth_enableModule(void);
+IFX_EXTERN void IfxEth_readMacAddress(IfxEth *eth, uint8 *macAddress);
+
+/**
+ * \param eth pointer to ETH driver structure
+ * \param len length of buffer
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setAndSendTransmitBuffer(IfxEth *eth, void *buffer, uint16 len);
+
+/** \brief Set up checksum Engine
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setupChecksumEngine(IfxEth *eth, IfxEth_ChecksumMode mode);
+
+/** \brief Start the transmitter functions
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_startTransmitter(IfxEth *eth);
+
+/** \brief Stop the transmitter functions
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_stopTransmitter(IfxEth *eth);
+
+/** \brief Wakeup the receiver functions
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_wakeupReceiver(IfxEth *eth);
+
+/** \brief Wakeup the transmitter functions
+ * \param eth eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_wakeupTransmitter(IfxEth *eth);
 
 /** \} */
 
@@ -691,26 +843,59 @@ IFX_INLINE void IfxEth_TxDescr_setup(IfxEth_TxDescr *descr, uint16 length, boole
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
 
-/** \brief set output pin of port
- * \param eth eth pointer to ETH driver structure
- * \param portPins portPins pin of port to be set
- * \return None
- */
-IFX_EXTERN void IfxEth_setupOutputPins(IfxEth *eth, const IfxEth_PortPins *portPins);
-
-/** \brief Set up input pins
- * \param eth eth pointer to ETH driver structure
- * \param portPins portPins pin of port to be set
- * \return None
- */
-IFX_EXTERN void IfxEth_setupInputPins(IfxEth *eth, const IfxEth_PortPins *portPins);
-
 /** \brief Initialises the driver
  * \param eth ETH driver structure
  * \param config ETH configuration structure
  * \return None
  */
 IFX_EXTERN void IfxEth_init(IfxEth *eth, const IfxEth_Config *config);
+
+/** \brief Initialises the configuration Structure
+ * \param config ETH configuration structure
+ * \param ethSfr Pointer to register base
+ * \return None
+ */
+IFX_EXTERN void IfxEth_initConfig(IfxEth_Config *config, Ifx_ETH *ethSfr);
+
+/** \brief Initialises the receive descriptors
+ * \param eth ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_initReceiveDescriptors(IfxEth *eth);
+
+/** \brief Initialises transmit descriptors
+ * \param eth pointer to ETH driver structure
+ * \return None
+ */
+IFX_EXTERN void IfxEth_initTransmitDescriptors(IfxEth *eth);
+
+/** \brief Set up MII mode input pins
+ * \param eth eth pointer to ETH driver structure
+ * \param miiPins pin of port to be set
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setupMiiInputPins(IfxEth *eth, const IfxEth_MiiPins *miiPins);
+
+/** \brief setup MII mode output pins
+ * \param eth eth pointer to ETH driver structure
+ * \param miiPins pin of port to be set
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setupMiiOutputPins(IfxEth *eth, const IfxEth_MiiPins *miiPins);
+
+/** \brief Set up input pins
+ * \param eth eth pointer to ETH driver structure
+ * \param rmiiPins pin of port to be set
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setupRmiiInputPins(IfxEth *eth, const IfxEth_RmiiPins *rmiiPins);
+
+/** \brief set output pin of port
+ * \param eth eth pointer to ETH driver structure
+ * \param rmiiPins pin of port to be set
+ * \return None
+ */
+IFX_EXTERN void IfxEth_setupRmiiOutputPins(IfxEth *eth, const IfxEth_RmiiPins *rmiiPins);
 
 /** \} */
 
@@ -734,6 +919,84 @@ IFX_EXTERN IfxEth_TxDescrList IfxEth_txDescr;
 /*---------------------Inline Function Implementations------------------------*/
 /******************************************************************************/
 
+IFX_INLINE void IfxEth_RxDescr_setBuffer(IfxEth_RxDescr *descr, void *buffer)
+{
+    descr->RDES2.U = (uint32)IFXCPU_GLB_ADDR_DSPR(IfxCpu_getCoreId(), buffer);
+}
+
+
+IFX_INLINE IfxEth_TxDescr *IfxEth_TxDescr_getNext(IfxEth_TxDescr *descr)
+{
+    return (IfxEth_TxDescr *)(descr->TDES3.U);
+}
+
+
+IFX_INLINE boolean IfxEth_TxDescr_isAvailable(IfxEth_TxDescr *descr)
+{
+    return (descr->TDES0.A.OWN == 0) ? TRUE : FALSE;
+}
+
+
+IFX_INLINE void IfxEth_TxDescr_setBuffer(IfxEth_TxDescr *descr, void *buffer)
+{
+    descr->TDES2.U = (uint32)IFXCPU_GLB_ADDR_DSPR(IfxCpu_getCoreId(), buffer);
+}
+
+
+IFX_INLINE void IfxEth_applySoftwareReset(IfxEth *eth)
+{
+    (void)eth;
+    ETH_BUS_MODE.B.SWR = 1; /* reset module */
+}
+
+
+IFX_INLINE void IfxEth_clearRxInterrupt(IfxEth *eth)
+{
+    (void)eth;
+    MODULE_ETH.STATUS.U = (uint32)(1 << 6);
+}
+
+
+IFX_INLINE void IfxEth_clearTxInterrupt(IfxEth *eth)
+{
+    (void)eth;
+    MODULE_ETH.STATUS.U = 0x1;
+}
+
+
+IFX_INLINE boolean IfxEth_isSoftwareResetDone(IfxEth *eth)
+{
+    (void)eth;
+    return ETH_BUS_MODE.B.SWR == 0 ? 1 : 0;
+}
+
+
+IFX_INLINE void IfxEth_setLoopbackMode(IfxEth *eth, boolean loopbackMode)
+{
+    (void)eth;
+    ETH_MAC_CONFIGURATION.B.LM = loopbackMode ? 1 : 0;
+}
+
+
+IFX_INLINE void IfxEth_setPhyInterfaceMode(IfxEth *eth, IfxEth_PhyInterfaceMode mode)
+{
+    (void)eth;
+    ETH_GPCTL.B.EPR = mode;
+}
+
+
+IFX_INLINE void IfxEth_setReceiveDescriptorAddress(Ifx_ETH *eth, void *address)
+{
+    eth->RECEIVE_DESCRIPTOR_LIST_ADDRESS.U = (uint32)address;
+}
+
+
+IFX_INLINE void IfxEth_setTransmitDescriptorAddress(Ifx_ETH *eth, void *address)
+{
+    eth->TRANSMIT_DESCRIPTOR_LIST_ADDRESS.U = (uint32)address;
+}
+
+
 IFX_INLINE void *IfxEth_waitTransmitBuffer(IfxEth *eth)
 {
     void *tx;
@@ -747,54 +1010,21 @@ IFX_INLINE void *IfxEth_waitTransmitBuffer(IfxEth *eth)
 }
 
 
-IFX_INLINE void IfxEth_setLoopbackMode(IfxEth *eth, boolean loopbackMode)
-{
-    (void)eth;
-    ETH_MAC_CONFIGURATION.B.LM = loopbackMode ? 1 : 0;
-}
-
-
-IFX_INLINE void IfxEth_clearTxInterrupt(IfxEth *eth)
-{
-    (void)eth;
-    MODULE_ETH.STATUS.B.TI = 1;
-}
-
-
-IFX_INLINE void IfxEth_clearRxInterrupt(IfxEth *eth)
-{
-    (void)eth;
-    MODULE_ETH.STATUS.B.RI = 1;
-}
-
-
-IFX_INLINE void IfxEth_TxDescr_setBuffer(IfxEth_TxDescr *descr, void *buffer)
-{
-    descr->TDES2.U = (uint32)buffer;
-}
-
-
-IFX_INLINE boolean IfxEth_TxDescr_isAvailable(IfxEth_TxDescr *descr)
-{
-    return (descr->TDES0.A.OWN == 0) ? TRUE : FALSE;
-}
-
-
-IFX_INLINE IfxEth_TxDescr *IfxEth_TxDescr_getNext(IfxEth_TxDescr *descr)
-{
-    return (IfxEth_TxDescr *)(descr->TDES3.U);
-}
-
-
-IFX_INLINE void IfxEth_RxDescr_setBuffer(IfxEth_RxDescr *descr, void *buffer)
-{
-    descr->RDES2.U = (uint32)buffer;
-}
-
-
 IFX_INLINE IfxEth_RxDescr *IfxEth_RxDescr_getNext(IfxEth_RxDescr *descr)
 {
     return (IfxEth_RxDescr *)(descr->RDES3.U);
+}
+
+
+IFX_INLINE void IfxEth_RxDescr_release(IfxEth_RxDescr *descr)
+{
+    descr->RDES0.A.OWN = 1U;
+}
+
+
+IFX_INLINE void IfxEth_TxDescr_release(IfxEth_TxDescr *descr)
+{
+    descr->TDES0.A.OWN = 1U;
 }
 
 
@@ -804,54 +1034,48 @@ IFX_INLINE IfxEth_RxDescr *IfxEth_getActualRxDescriptor(IfxEth *eth)
 }
 
 
-IFX_INLINE void IfxEth_shuffleTxDescriptor(IfxEth *eth)
+IFX_INLINE uint32 IfxEth_getActualRxIndex(IfxEth *eth)
 {
-    eth->pTxDescr = IfxEth_TxDescr_getNext(eth->pTxDescr);
+    uint32 offset = (uint32)eth->pRxDescr - (uint32)IfxEth_getBaseRxDescriptor(eth);
+    return offset / sizeof(IfxEth_RxDescr);
 }
 
 
-IFX_INLINE void IfxEth_shuffleRxDescriptor(IfxEth *eth)
+IFX_INLINE IfxEth_TxDescr *IfxEth_getActualTxDescriptor(IfxEth *eth)
 {
-    eth->pRxDescr = IfxEth_RxDescr_getNext(eth->pRxDescr);
+    return eth->pTxDescr;
 }
 
 
-IFX_INLINE boolean IfxEth_isTxInterrupt(IfxEth *eth)
+IFX_INLINE IfxEth_RxDescr *IfxEth_getBaseRxDescriptor(IfxEth *eth)
+{
+    return eth->rxDescr->items;
+}
+
+
+IFX_INLINE IfxEth_TxDescr *IfxEth_getBaseTxDescriptor(IfxEth *eth)
+{
+    return eth->txDescr->items;
+}
+
+
+IFX_INLINE boolean IfxEth_getLoopbackMode(IfxEth *eth)
 {
     (void)eth;
-
-    return MODULE_ETH.STATUS.B.TI != 0;
+    return (ETH_MAC_CONFIGURATION.B.LM != 0) ? TRUE : FALSE;
 }
 
 
-IFX_INLINE boolean IfxEth_isRxInterrupt(IfxEth *eth)
+IFX_INLINE void *IfxEth_getMacAddressPointer(IfxEth *eth)
+{
+    return (void *)eth->config.macAddress;
+}
+
+
+IFX_INLINE IfxEth_ReceiveProcessState IfxEth_getReceiveProcessState(IfxEth *eth)
 {
     (void)eth;
-
-    return MODULE_ETH.STATUS.B.RI != 0;
-}
-
-
-IFX_INLINE boolean IfxEth_isRxDataAvailable(IfxEth *eth)
-{
-    //return (IfxEth_rxDescr[eth->rxIndex][0] & (1U << 31)) == 0);
-    return IfxEth_getActualRxDescriptor(eth)->RDES0.A.OWN == 0;
-}
-
-
-IFX_INLINE boolean IfxEth_isRxChecksumError(IfxEth *eth)
-{
-    IfxEth_RxDescr *descr = IfxEth_getActualRxDescriptor(eth);
-    boolean         error = (descr->RDES0.A.IPC != 0);
-    descr->RDES0.A.IPC = 0;
-
-    return error;
-}
-
-
-IFX_INLINE boolean IfxEth_isLinkActive(IfxEth *eth)
-{
-    return eth->config.phyLink() != 0;
+    return (IfxEth_ReceiveProcessState)MODULE_ETH.STATUS.B.RS;
 }
 
 
@@ -868,53 +1092,67 @@ IFX_INLINE uint16 IfxEth_getRxDataLength(IfxEth *eth)
 }
 
 
-IFX_INLINE void *IfxEth_getMacAddressPointer(IfxEth *eth)
-{
-    return (void *)eth->config.macAddress;
-}
-
-
-IFX_INLINE boolean IfxEth_getLoopbackMode(IfxEth *eth)
+IFX_INLINE IfxEth_TransmitProcessState IfxEth_getTransmitProcessState(IfxEth *eth)
 {
     (void)eth;
-    return (ETH_MAC_CONFIGURATION.B.LM != 0) ? TRUE : FALSE;
+    return (IfxEth_TransmitProcessState)MODULE_ETH.STATUS.B.TS;
 }
 
 
-IFX_INLINE IfxEth_TxDescr *IfxEth_getBaseTxDescriptor(IfxEth *eth)
+IFX_INLINE boolean IfxEth_isLinkActive(IfxEth *eth)
 {
-    return eth->txDescr->items;
+    return eth->config.phyLink() != 0;
 }
 
 
-IFX_INLINE IfxEth_RxDescr *IfxEth_getBaseRxDescriptor(IfxEth *eth)
+IFX_INLINE boolean IfxEth_isRxChecksumError(IfxEth *eth)
 {
-    return eth->rxDescr->items;
+    IfxEth_RxDescr *descr = IfxEth_getActualRxDescriptor(eth);
+    boolean         error = (descr->RDES0.A.IPC != 0);
+    descr->RDES0.A.IPC = 0;
+
+    return error;
 }
 
 
-IFX_INLINE IfxEth_TxDescr *IfxEth_getActualTxDescriptor(IfxEth *eth)
+IFX_INLINE boolean IfxEth_isRxDataAvailable(IfxEth *eth)
 {
-    return eth->pTxDescr;
+    //return (IfxEth_rxDescr[eth->rxIndex][0] & (1U << 31)) == 0);
+    return IfxEth_getActualRxDescriptor(eth)->RDES0.A.OWN == 0;
 }
 
 
-IFX_INLINE uint32 IfxEth_getActualRxIndex(IfxEth *eth)
+IFX_INLINE boolean IfxEth_isRxInterrupt(IfxEth *eth)
 {
-    uint32 offset = (uint32)eth->pRxDescr - (uint32)IfxEth_getBaseRxDescriptor(eth);
-    return offset / sizeof(IfxEth_RxDescr);
+    (void)eth;
+
+    return MODULE_ETH.STATUS.B.RI != 0;
 }
 
 
-IFX_INLINE void IfxEth_TxDescr_release(IfxEth_TxDescr *descr)
+IFX_INLINE boolean IfxEth_isTxInterrupt(IfxEth *eth)
 {
-    descr->TDES0.A.OWN = 1U;
+    (void)eth;
+
+    return MODULE_ETH.STATUS.B.TI != 0;
 }
 
 
-IFX_INLINE void IfxEth_RxDescr_release(IfxEth_RxDescr *descr)
+IFX_INLINE void IfxEth_readAllFlags(IfxEth *eth)
 {
-    descr->RDES0.A.OWN = 1U;
+    eth->status.U = ETH_STATUS.U;
+}
+
+
+IFX_INLINE void IfxEth_shuffleRxDescriptor(IfxEth *eth)
+{
+    eth->pRxDescr = IfxEth_RxDescr_getNext(eth->pRxDescr);
+}
+
+
+IFX_INLINE void IfxEth_shuffleTxDescriptor(IfxEth *eth)
+{
+    eth->pTxDescr = IfxEth_TxDescr_getNext(eth->pTxDescr);
 }
 
 

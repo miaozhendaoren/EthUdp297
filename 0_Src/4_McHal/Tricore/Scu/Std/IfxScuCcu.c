@@ -2,7 +2,7 @@
  * \file IfxScuCcu.c
  * \brief SCU  basic functionality
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -28,8 +28,6 @@
 /******************************************************************************/
 
 #include "IfxScuCcu.h"
-#include "IfxStm_reg.h"
-#include "IfxFlash_reg.h"
 
 /** \addtogroup IfxLld_Scu_Std_Ccu
  * \{ */
@@ -69,9 +67,11 @@ static const IfxScuCcu_PllStepsConfig IfxScuCcu_aDefaultPllConfigSteps[] = {
 /******************************************************************************/
 
 const IfxScuCcu_Config        IfxScuCcu_defaultClockConfig = {
-    sizeof(IfxScuCcu_aDefaultPllConfigSteps) / sizeof(IfxScuCcu_PllStepsConfig),
-    (IfxScuCcu_PllStepsConfig *)IfxScuCcu_aDefaultPllConfigSteps,
-    IFXSCU_CFG_PLL_INITIAL_STEP,
+    {
+        sizeof(IfxScuCcu_aDefaultPllConfigSteps) / sizeof(IfxScuCcu_PllStepsConfig),
+        (IfxScuCcu_PllStepsConfig *)IfxScuCcu_aDefaultPllConfigSteps,
+        IFXSCU_CFG_PLL_INITIAL_STEP,
+    },
     IFXSCU_CFG_CLK_DISTRIBUTION,
     IFXSCU_CFG_FLASH_WAITSTATE
 };
@@ -204,6 +204,7 @@ float32 IfxScuCcu_getCpuFrequency(const IfxCpu_ResourceCpu cpu)
     case IfxCpu_ResourceCpu_2:
         cpuDiv = SCU_CCUCON8.U;
         break;
+
     default:
         frequency = 0.0;
         break;
@@ -223,7 +224,7 @@ float32 IfxScuCcu_getFsi2Frequency(void)
     float32         frequency;
     Ifx_SCU_CCUCON0 ccucon0 = SCU_CCUCON0;
 
-    if (ccucon0.B.FSIDIV == 0)
+    if (ccucon0.B.FSI2DIV == 0)
     {
         frequency = 0;
     }
@@ -231,9 +232,9 @@ float32 IfxScuCcu_getFsi2Frequency(void)
     {
         frequency = IfxScuCcu_getSriFrequency();
 
-        if ((ccucon0.B.FSIDIV == 1) || (ccucon0.B.SRIDIV == 1) || (ccucon0.B.SRIDIV == 2))
+        if ((ccucon0.B.SRIDIV == 1) || (ccucon0.B.SRIDIV == 2))
         {
-            frequency = frequency / ccucon0.B.FSIDIV;
+            frequency = frequency / ccucon0.B.FSI2DIV;
         }
     }
 
@@ -254,7 +255,7 @@ float32 IfxScuCcu_getFsiFrequency(void)
     {
         frequency = IfxScuCcu_getSriFrequency();
 
-        if ((ccucon0.B.FSIDIV == 1) || (ccucon0.B.SRIDIV == 1) || (ccucon0.B.SRIDIV == 2))
+        if ((ccucon0.B.SRIDIV == 1) || (ccucon0.B.SRIDIV == 2))
         {
             frequency = frequency / ccucon0.B.FSIDIV;
         }
@@ -536,18 +537,21 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
     endinit_pw     = IfxScuWdt_getCpuWatchdogPassword();
     endinitSfty_pw = IfxScuWdt_getSafetyWatchdogPassword();
 
-    {                           /* Disable TRAP for SMU (oscillator watchdog and unlock detection) */
+    {
+        /* Disable TRAP for SMU (oscillator watchdog and unlock detection) */
         IfxScuWdt_clearCpuEndinit(endinit_pw);
         smuTrapEnable      = SCU_TRAPDIS.B.SMUT;
         SCU_TRAPDIS.B.SMUT = 1U;
         IfxScuWdt_setCpuEndinit(endinit_pw);
     }
 
-    {                           /* Select fback (fosc-evr) as CCU input clock */
+    {
+        /* Select fback (fosc-evr) as CCU input clock */
         IfxScuWdt_clearSafetyEndinit(endinitSfty_pw);
 
         while (SCU_CCUCON0.B.LCK != 0U)
-        {                       /*Wait till ccucon0 lock is set */
+        {
+            /*Wait till ccucon0 lock is set */
             /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
         }
 
@@ -560,7 +564,8 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
 
         /* Select Clock Source as PLL input clock */
         while (SCU_CCUCON0.B.LCK != 0U)
-        {                       /*Wait till ccucon0 lock is set */
+        {
+            /*Wait till ccucon0 lock is set */
             /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
         }
 
@@ -573,48 +578,52 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
     }
 
     if (status == 0)
-    {                           /*Start the PLL configuration sequence */
+    {
+        /*Start the PLL configuration sequence */
         uint8 pllStepsCount;
 
         /*Setting up P N and K2 values equate pll to evr osc freq */
         {
-            {                   /*Set the K2 divider value for the step corresponding to step count */
+            {
+                /*Set the K2 divider value for the step corresponding to step count */
                 IfxScuWdt_clearSafetyEndinit(endinitSfty_pw);
 
                 while (SCU_PLLSTAT.B.K2RDY == 0U)
-                {               /*Wait until K2 divider is ready */
+                {
+                    /*Wait until K2 divider is ready */
                     /*No "timeout" required because Safety Endinit will give a trap */
                 }
 
-                SCU_PLLCON1.B.K2DIV = cfg->pllInitialStep.k2Initial;
+                SCU_PLLCON1.B.K2DIV = cfg->sysPll.pllInitialStep.k2Initial;
 
-                if ((SCU_PLLCON0.B.PDIV != cfg->pllInitialStep.pDivider) ||
-                    (SCU_PLLCON0.B.NDIV != cfg->pllInitialStep.nDivider))
+                if ((SCU_PLLCON0.B.PDIV != cfg->sysPll.pllInitialStep.pDivider) ||
+                    (SCU_PLLCON0.B.NDIV != cfg->sysPll.pllInitialStep.nDivider))
                 {
                     /*change P and N divider values */
-                    SCU_PLLCON0.B.PDIV = cfg->pllInitialStep.pDivider;
-                    SCU_PLLCON0.B.NDIV = cfg->pllInitialStep.nDivider;
+                    SCU_PLLCON0.B.PDIV = cfg->sysPll.pllInitialStep.pDivider;
+                    SCU_PLLCON0.B.NDIV = cfg->sysPll.pllInitialStep.nDivider;
 
                     /* Disable oscillator disconnect feature
                      * in case of PLL unlock, PLL stays connected to fref */
                     SCU_PLLCON0.B.OSCDISCDIS = 1;
                     /* Connect PLL to fREF as oscillator clock is connected to PLL   */
                     SCU_PLLCON0.B.CLRFINDIS  = 1;
+                    /* Restart PLL lock detection (RESLD = 1) */
+                    SCU_PLLCON0.B.RESLD      = 1;
 
                     IfxScuCcu_wait(0.000050F);  /*Wait for 50us */
 
-                    /* Restart PLL lock detection (RESLD = 1) */
-                    SCU_PLLCON0.B.RESLD = 1;
-
                     while (SCU_PLLSTAT.B.VCOLOCK == 0U)
-                    {           /* Wait for PLL lock */
+                    {
+                        /* Wait for PLL lock */
                         /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                     }
 
                     SCU_PLLCON0.B.VCOBYP = 0; /*VCO bypass disabled */
 
                     while (SCU_CCUCON0.B.LCK != 0U)
-                    {                         /*Wait till ccucon registers can be written with new value */
+                    {
+                        /*Wait till ccucon registers can be written with new value */
                         /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                     }
 
@@ -622,14 +631,15 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
 
                     /*Configure the clock distribution */
                     while (SCU_CCUCON0.B.LCK != 0U)
-                    {           /*Wait till ccucon registers can be written with new value */
+                    {
+                        /*Wait till ccucon registers can be written with new value */
                         /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                     }
 
                     /*Wait until the initial clock configurations take in to effect for the PLL*/
-                    IfxScuCcu_wait(cfg->pllInitialStep.waitTime); /*Wait for configured initial time */
+                    IfxScuCcu_wait(cfg->sysPll.pllInitialStep.waitTime); /*Wait for configured initial time */
 
-                    {                                             /*Write CCUCON0 configuration */
+                    {                                                    /*Write CCUCON0 configuration */
                         Ifx_SCU_CCUCON0 ccucon0;
                         ccucon0.U        = SCU_CCUCON0.U & ~cfg->clockDistribution.ccucon0.mask;
                         /*update with configured value */
@@ -640,11 +650,13 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
                     }
 
                     while (SCU_CCUCON1.B.LCK != 0U)
-                    {           /*Wait till ccucon registers can be written with new value */
+                    {
+                        /*Wait till ccucon registers can be written with new value */
                         /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                     }
 
-                    {           /*Write CCUCON1 configuration */
+                    {
+                        /*Write CCUCON1 configuration */
                         Ifx_SCU_CCUCON1 ccucon1;
                         ccucon1.U       = SCU_CCUCON1.U & ~cfg->clockDistribution.ccucon1.mask;
                         /*update with configured value */
@@ -655,11 +667,13 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
                     }
 
                     while (SCU_CCUCON2.B.LCK != 0U)
-                    {           /*Wait till ccucon registers can be written with new value */
+                    {
+                        /*Wait till ccucon registers can be written with new value */
                         /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                     }
 
-                    {                                             /*Write CCUCON2 configuration */
+                    {
+                        /*Write CCUCON2 configuration */
                         Ifx_SCU_CCUCON2 ccucon2;
                         ccucon2.U    = SCU_CCUCON2.U & ~cfg->clockDistribution.ccucon2.mask;
                         /*update with configured value */
@@ -690,7 +704,8 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
                         SCU_CCUCON6 = ccucon6;
                     }
 
-                    {           /*Write CCUCON7 configuration */
+                    {
+                        /*Write CCUCON7 configuration */
                         Ifx_SCU_CCUCON7 ccucon7;
                         ccucon7.U   = SCU_CCUCON7.U & ~cfg->clockDistribution.ccucon7.mask;
                         /*update with configured value */
@@ -698,7 +713,8 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
                         SCU_CCUCON7 = ccucon7;
                     }
 
-                    {           /*Write CCUCON8 configuration */
+                    {
+                        /*Write CCUCON8 configuration */
                         Ifx_SCU_CCUCON8 ccucon8;
                         ccucon8.U   = SCU_CCUCON8.U & ~cfg->clockDistribution.ccucon8.mask;
                         /*update with configured value */
@@ -726,30 +742,31 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
         }
 
         /*Start Pll ramp up sequence */
-        for (pllStepsCount = 0; pllStepsCount < cfg->numOfPllDividerSteps; pllStepsCount++)
+        for (pllStepsCount = 0; pllStepsCount < cfg->sysPll.numOfPllDividerSteps; pllStepsCount++)
         {                       /*iterate through number of pll steps */
             {
                 IfxScuWdt_clearSafetyEndinit(endinitSfty_pw);
 
                 /*Configure K2 divider */
                 while (SCU_PLLSTAT.B.K2RDY == 0U)
-                {               /*Wait until K2 divider is ready */
+                {
+                    /*Wait until K2 divider is ready */
                     /*No "timeout" required, because if it hangs, Safety Endinit will give a trap */
                 }
 
                 /*Now set the K2 divider value for the step corresponding to step count */
-                SCU_PLLCON1.B.K2DIV = cfg->pllDividerStep[pllStepsCount].k2Step;
+                SCU_PLLCON1.B.K2DIV = cfg->sysPll.pllDividerStep[pllStepsCount].k2Step;
                 IfxScuWdt_setSafetyEndinit(endinitSfty_pw);
             }
 
             /*call the hook function if configured */
-            if (cfg->pllDividerStep[pllStepsCount].hookFunction != (IfxScuCcu_PllStepsFunctionHook)0)
+            if (cfg->sysPll.pllDividerStep[pllStepsCount].hookFunction != (IfxScuCcu_PllStepsFunctionHook)0)
             {
-                cfg->pllDividerStep[pllStepsCount].hookFunction();
+                cfg->sysPll.pllDividerStep[pllStepsCount].hookFunction();
             }
 
             /*Wait for waitCounter corresponding to the pll step */
-            IfxScuCcu_wait(cfg->pllDividerStep[pllStepsCount].waitTime);
+            IfxScuCcu_wait(cfg->sysPll.pllDividerStep[pllStepsCount].waitTime);
         }
     }
 
@@ -758,7 +775,8 @@ boolean IfxScuCcu_init(const IfxScuCcu_Config *cfg)
         SCU_PLLCON0.B.OSCDISCDIS = 0U;
         IfxScuWdt_setSafetyEndinit(endinitSfty_pw);
     }
-    {                           /* Enable VCO unlock Trap if it was disabled before */
+    {
+        /* Enable VCO unlock Trap if it was disabled before */
         IfxScuWdt_clearCpuEndinit(endinit_pw);
         SCU_TRAPCLR.B.SMUT = 1U;
         SCU_TRAPDIS.B.SMUT = smuTrapEnable;
@@ -779,7 +797,6 @@ boolean IfxScuCcu_initErayPll(const IfxScuCcu_ErayPllConfig *cfg)
     uint8   smuTrapEnable;
     uint16  endinit_pw, endinitSfty_pw;
     boolean status = 0;
-    uint8   i;
 
     endinit_pw     = IfxScuWdt_getCpuWatchdogPassword();
     endinitSfty_pw = IfxScuWdt_getSafetyWatchdogPassword();
@@ -823,7 +840,6 @@ boolean IfxScuCcu_initErayPll(const IfxScuCcu_ErayPllConfig *cfg)
     {}
 
     SCU_PLLERAYCON1.B.K2DIV = cfg->pllInitialStep.k2Initial;
-
     SCU_PLLERAYCON0.B.PDIV  = cfg->pllInitialStep.pDivider;
     SCU_PLLERAYCON0.B.NDIV  = cfg->pllInitialStep.nDivider;
     /*
@@ -864,10 +880,6 @@ boolean IfxScuCcu_initErayPll(const IfxScuCcu_ErayPllConfig *cfg)
     }
 
     IfxScuWdt_setSafetyEndinit(endinitSfty_pw);
-
-    /*Wait for waitCounter corresponding to the pll step */
-    for (i = 0; i < 100; i++)
-    {}
 
     {                           /* Enable VCO unlock Trap if it was disabled before */
         IfxScuWdt_clearCpuEndinit(endinit_pw);
@@ -997,78 +1009,6 @@ float32 IfxScuCcu_setCpuFrequency(IfxCpu_ResourceCpu cpu, float32 cpuFreq)
 }
 
 
-float32 IfxScuCcu_setPll2ErayFrequency(float32 pll2ErayFreq)
-{
-    uint16 password = IfxScuWdt_getSafetyWatchdogPassword();
-    uint32 pll2Div  = (uint32)((IfxScuCcu_getPllErayVcoFrequency() / pll2ErayFreq) - 1);
-    {
-        IfxScuWdt_clearSafetyEndinit(password);
-        SCU_PLLERAYCON1.B.K3DIV = pll2Div;
-        IfxScuWdt_setSafetyEndinit(password);
-    }
-    return IfxScuCcu_getPll2ErayFrequency();
-}
-
-
-float32 IfxScuCcu_setPll2Frequency(float32 pll2Freq)
-{
-    uint16 endinitSfty_pw = IfxScuWdt_getSafetyWatchdogPassword();
-    uint32 pll2Div        = (uint32)((IfxScuCcu_getPllVcoFrequency() / pll2Freq) - 1);
-    {
-        IfxScuWdt_clearSafetyEndinit(endinitSfty_pw);
-        SCU_PLLCON1.B.K3DIV = pll2Div;
-        IfxScuWdt_setSafetyEndinit(endinitSfty_pw);
-    }
-    return IfxScuCcu_getPll2Frequency();
-}
-
-
-float32 IfxScuCcu_setSpbFrequency(float32 spbFreq)
-{
-    /* TODO: check whether it is necessary to disable trap and/or the safety */
-    uint16  l_EndInitPW;
-    uint16  l_SEndInitPW;
-    float32 inputFreq = IfxScuCcu_getSourceFrequency();
-    uint32  spbDiv    = (uint32)(inputFreq / spbFreq);
-    spbDiv       = __maxu(spbDiv, 2);
-    spbDiv       = spbDiv & 0x2U; /* only even dividers */
-
-    l_EndInitPW  = IfxScuWdt_getCpuWatchdogPassword();
-    l_SEndInitPW = IfxScuWdt_getSafetyWatchdogPassword();
-
-    IfxScuWdt_clearCpuEndinit(l_EndInitPW);
-    SCU_TRAPDIS.U = SCU_TRAPDIS.U | 0x3E0U;
-    IfxScuWdt_setCpuEndinit(l_EndInitPW);
-
-    IfxScuWdt_clearSafetyEndinit(l_SEndInitPW);
-    SCU_CCUCON0.B.SPBDIV = spbDiv;
-    IfxScuWdt_setSafetyEndinit(l_SEndInitPW);
-
-    IfxScuWdt_clearCpuEndinit(l_EndInitPW);
-    SCU_TRAPDIS.U = SCU_TRAPDIS.U & (uint32)~0x3E0UL;
-    IfxScuWdt_setCpuEndinit(l_EndInitPW);
-
-    return IfxScuCcu_getSpbFrequency();
-}
-
-
-static void IfxScuCcu_wait(float32 timeSec)
-{
-    uint32 stmCount      = (uint32)(IfxScuCcu_getStmFrequency() * timeSec);
-    uint32 stmCountBegin = STM0_TIM0.U;
-
-    while ((uint32)(STM0_TIM0.U - stmCountBegin) < stmCount)
-    {
-        /* There is no need to check overflow of the STM timer.
-         * When counter after overflow subtracted with counter before overflow,
-         * the subtraction result will be as expected, as long as both are unsigned 32 bits
-         * eg: stmCountBegin= 0xFFFFFFFE (before overflow)
-         *     stmCountNow = 0x00000002 (before overflow)
-         *     diff= stmCountNow - stmCountBegin = 4 as expected.*/
-    }
-}
-
-
 float32 IfxScuCcu_setGtmFrequency(float32 gtmFreq)
 {
     uint16          l_SEndInitPW;
@@ -1098,4 +1038,129 @@ float32 IfxScuCcu_setGtmFrequency(float32 gtmFreq)
     IfxScuWdt_setSafetyEndinit(l_SEndInitPW);
 
     return IfxScuCcu_getGtmFrequency();
+}
+
+
+float32 IfxScuCcu_setPll2ErayFrequency(float32 pll2ErayFreq)
+{
+    uint16 password = IfxScuWdt_getSafetyWatchdogPassword();
+    uint32 pll2Div  = (uint32)((IfxScuCcu_getPllErayVcoFrequency() / pll2ErayFreq) - 1);
+    {
+        IfxScuWdt_clearSafetyEndinit(password);
+        SCU_PLLERAYCON1.B.K3DIV = pll2Div;
+        IfxScuWdt_setSafetyEndinit(password);
+    }
+    return IfxScuCcu_getPll2ErayFrequency();
+}
+
+
+float32 IfxScuCcu_setPll2Frequency(float32 pll2Freq)
+{
+    uint16 endinitSfty_pw = IfxScuWdt_getSafetyWatchdogPassword();
+    uint32 pll2Div        = (uint32)((IfxScuCcu_getPllVcoFrequency() / pll2Freq) - 1);
+    {
+        IfxScuWdt_clearSafetyEndinit(endinitSfty_pw);
+        SCU_PLLCON1.B.K3DIV = pll2Div;
+        IfxScuWdt_setSafetyEndinit(endinitSfty_pw);
+    }
+    return IfxScuCcu_getPll2Frequency();
+}
+
+
+float32 IfxScuCcu_setSpbFrequency(float32 spbFreq)
+{
+    /* TODO: check whether it is necessary to disable trap and/or the safety */
+    uint16          l_EndInitPW;
+    uint16          l_SEndInitPW;
+    Ifx_SCU_CCUCON0 ccucon0;
+    float32         inputFreq = IfxScuCcu_getSourceFrequency();
+    uint32          spbDiv    = (uint32)(inputFreq / spbFreq);
+    spbDiv = __maxu(spbDiv, 2);
+
+    if ((spbDiv >= 7) && (spbDiv < 14) && ((spbDiv & 1) == 1))
+    {
+        spbDiv = spbDiv - 1;
+    }
+
+    if (spbDiv == 14)
+    {
+        spbDiv = 12;
+    }
+
+    l_EndInitPW  = IfxScuWdt_getCpuWatchdogPassword();
+    l_SEndInitPW = IfxScuWdt_getSafetyWatchdogPassword();
+
+    IfxScuWdt_clearCpuEndinit(l_EndInitPW);
+    SCU_TRAPDIS.U = SCU_TRAPDIS.U | 0x3E0U;
+    IfxScuWdt_setCpuEndinit(l_EndInitPW);
+
+    IfxScuWdt_clearSafetyEndinit(l_SEndInitPW);
+    ccucon0.U        = SCU_CCUCON0.U;
+    ccucon0.B.SPBDIV = spbDiv;
+    ccucon0.B.UP     = 1;
+    SCU_CCUCON0.U    = ccucon0.U;
+    IfxScuWdt_setSafetyEndinit(l_SEndInitPW);
+
+    IfxScuWdt_clearCpuEndinit(l_EndInitPW);
+    SCU_TRAPDIS.U = SCU_TRAPDIS.U & (uint32)~0x3E0UL;
+    IfxScuWdt_setCpuEndinit(l_EndInitPW);
+
+    while (SCU_CCUCON0.B.LCK != 0U)
+    {}
+
+    return IfxScuCcu_getSpbFrequency();
+}
+
+
+float32 IfxScuCcu_setSriFrequency(float32 sriFreq)
+{
+    float32         freq   = 0;
+    float32         source = IfxScuCcu_getSourceFrequency();
+    Ifx_SCU_CCUCON0 ccucon0;
+    uint16          l_SEndInitPW;
+    uint32          sriDiv = (uint32)__roundf(source / sriFreq);
+    sriDiv = __maxu(sriDiv, 1);
+
+    if ((sriDiv >= 7) && (sriDiv < 14) && ((sriDiv & 1) == 1))
+    {
+        sriDiv = sriDiv - 1;
+    }
+
+    if (sriDiv == 14)
+    {
+        sriDiv = 12;
+    }
+
+    l_SEndInitPW = IfxScuWdt_getSafetyWatchdogPassword();
+    IfxScuWdt_clearSafetyEndinit(l_SEndInitPW);
+
+    ccucon0.U        = SCU_CCUCON0.U;
+    ccucon0.B.SRIDIV = sriDiv;
+    ccucon0.B.UP     = 1;
+    SCU_CCUCON0.U    = ccucon0.U;
+
+    IfxScuWdt_setSafetyEndinit(l_SEndInitPW);
+
+    while (SCU_CCUCON0.B.LCK != 0U)
+    {}
+
+    freq = IfxScuCcu_getSriFrequency();
+    return freq;
+}
+
+
+static void IfxScuCcu_wait(float32 timeSec)
+{
+    uint32 stmCount      = (uint32)(IfxScuCcu_getStmFrequency() * timeSec);
+    uint32 stmCountBegin = STM0_TIM0.U;
+
+    while ((uint32)(STM0_TIM0.U - stmCountBegin) < stmCount)
+    {
+        /* There is no need to check overflow of the STM timer.
+         * When counter after overflow subtracted with counter before overflow,
+         * the subtraction result will be as expected, as long as both are unsigned 32 bits
+         * eg: stmCountBegin= 0xFFFFFFFE (before overflow)
+         *     stmCountNow = 0x00000002 (before overflow)
+         *     diff= stmCountNow - stmCountBegin = 4 as expected.*/
+    }
 }

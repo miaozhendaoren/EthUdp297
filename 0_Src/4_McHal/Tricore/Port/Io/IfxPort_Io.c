@@ -2,7 +2,7 @@
  * \file IfxPort_Io.c
  * \brief PORT IO details
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *

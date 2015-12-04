@@ -3,7 +3,7 @@
  * \brief Board support package
  * \ingroup library_srvsw_sysse_bsp_bsp
  *
- * \version iLLD_1_0_0_0_0
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -401,7 +401,7 @@ IFX_INLINE void wait(Ifx_TickTime timeout)
 #define Pin_setStateHigh(pin)                   IfxPort_setPinHigh((pin)->port, (pin)->pinIndex)
 #define Pin_setStateLow(pin)                    IfxPort_setPinLow((pin)->port, (pin)->pinIndex)
 #define Pin_getState(pin)                       IfxPort_getPinState((pin)->port, (pin)->pinIndex)
-#define Pin_setGroupModeOutput(pin, mask, mode) IfxPort_setGroupModeOutput((pin)->port, (pin)->pinIndex, (mask), (mode))
+#define Pin_setGroupModeOutput(pin, mask, mode) IfxPort_setGroupModeOutput((pin)->port, (pin)->pinIndex, (mask), (mode), (outputIdx))
 #define Pin_setGroupModeInput(pin, mask, mode)  IfxPort_setGroupModeInput((pin)->port, (pin)->pinIndex, (mask), (mode))
 #define Pin_setGroupState(pin, mask, data)      IfxPort_setGroupState((pin)->port, (pin)->pinIndex, (mask), (data))
 #define Pin_getGroupState(pin, mask)            IfxPort_getGroupState((pin)->port, (pin)->pinIndex, (mask))

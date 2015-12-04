@@ -3,7 +3,7 @@
  * \brief CPU  basic functionality
  * \ingroup IfxLld_Cpu
  *
- * \version iLLD_0_1_0_6
+ * \version iLLD_1_0_0_3_0
  * \copyright Copyright (c) 2013 Infineon Technologies AG. All rights reserved.
  *
  *
@@ -21,13 +21,12 @@
  * INFINEON SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL,
  * OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
  *
+ *
  * \defgroup IfxLld_Cpu CPU
  * \ingroup IfxLld
  * \defgroup IfxLld_Cpu_Std Standard Driver
  * \ingroup IfxLld_Cpu
  * \defgroup IfxLld_Cpu_Std_Core Cpu Core Functions
- * \ingroup IfxLld_Cpu_Std
- * \defgroup IfxLld_Cpu_Std_Std Standard Driver
  * \ingroup IfxLld_Cpu_Std
  * \defgroup IfxLld_Cpu_Std_Interrupt Interrupt Utility Functions
  * \ingroup IfxLld_Cpu_Std
@@ -51,9 +50,11 @@
 /******************************************************************************/
 
 #include "_Impl/IfxCpu_cfg.h"
-#include "IfxSrc_reg.h"
-#include "IfxScu_reg.h"
+#include "_Reg/IfxSrc_reg.h"
+#include "_Reg/IfxScu_reg.h"
 #include "Scu/Std/IfxScuWdt.h"
+#include "_Impl/IfxScu_cfg.h"
+#include "_Utilities/Ifx_Assert.h"
 
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
@@ -69,7 +70,7 @@
  *     dmaChConfig.destinationAddress = IFXCPU_GLB_ADDR_DSPR(IfxCpu_getCoreId(), &destinationBuffer[i][0]);
  *  \endcode
  */
-#define IFXCPU_GLB_ADDR_DSPR(cpu, address) ((((unsigned)(address) & 0x000fffff) | 0x70000000) - ((cpu) * 0x10000000))
+#define IFXCPU_GLB_ADDR_DSPR(cpu, address) ((((((unsigned)(address) & 0xF0000000) == 0xD0000000) ? ((((unsigned)(address) & 0x000fffff) | 0x70000000) - ((cpu) * 0x10000000)) : (unsigned)(address))))
 
 /** \brief Convert local PSPR address to global PSPR address which can be accessed from the SRI bus.
  * Use this macro to convert a local PSPR address (in segment 0xc......) to
@@ -175,6 +176,16 @@ IFX_INLINE IfxCpu_ResourceCpu IfxCpu_getCoreId(void);
  */
 IFX_INLINE void IfxCpu_initCSA(uint32 *csaBegin, uint32 *csaEnd);
 
+/** \brief Set/Clear safety task identifier (PSW.S) on current CPU
+ * \return None
+ */
+IFX_INLINE void IfxCpu_setSafetyTaskIdentifier(boolean safetyId);
+
+/** \brief Triggers Software Reset
+ * \return None
+ */
+IFX_INLINE void IfxCpu_triggerSwReset(void);
+
 /******************************************************************************/
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
@@ -257,6 +268,11 @@ IFX_INLINE boolean IfxCpu_disableInterrupts(void);
  */
 IFX_INLINE void IfxCpu_enableInterrupts(void);
 
+/** \brief Disable the Global Interrupt
+ * \return None
+ */
+IFX_INLINE void IfxCpu_forceDisableInterrupts(void);
+
 /** \brief API to restore global interrupt with that of the passed parameter.
  *
  * This API can be used only to disable the global interrupts of caller CPU. It cannot be
@@ -274,6 +290,35 @@ IFX_INLINE void IfxCpu_restoreInterrupts(boolean enabled);
 /******************************************************************************/
 /*-------------------------Inline Function Prototypes-------------------------*/
 /******************************************************************************/
+
+/** \brief API to enable/ disable the data cacheability for selected segments
+ * With this API cacheability for one or more segment can be enabled/disabled for the CPU core where this API is called.
+ * \note This API is to be called only if the PCACHE or DCACHE are not enabled before
+ * \param segmentNumberMask Mask where bitfield 0 represents segment 0 and bitfield 16 represent segment F.
+ * \param enable TRUE: to enable the cacheability for selected segment, FALSE: to disable.
+ * \return None
+ */
+IFX_INLINE void IfxCpu_enableSegmentSpecificDataAccessCacheability(uint16 segmentNumberMask, boolean enable);
+
+/** \brief API to enable/ disable the instruction cacheability for selected segments
+ * With this API cacheability for one or more segment can be enabled/disabled for the CPU core where this API is called.
+ * \note This API is to be called only if the PCACHE or DCACHE are not enabled before
+ * \param segmentNumberMask Mask where bitfield 0 represents segment 0 and bitfield 16 represent segment F.
+ * \param enable TRUE: to enable the cacheability for selected segment, FALSE: to disable.
+ * \return None
+ */
+IFX_INLINE void IfxCpu_enableSegmentSpecificInstructionAccessCacheability(uint16 segmentNumberMask, boolean enable);
+
+/** \brief API to invalidate the program cache
+ * \return None
+ */
+IFX_INLINE void IfxCpu_invalidateProgramCache(void);
+
+/** \brief API to determine if an address is in a cachable or non-cachable Flash/LMU section
+ * \param address Address
+ * \return Status TRUE/FALSE
+ */
+IFX_INLINE boolean IfxCpu_isAddressCachable(void *address);
 
 /** \brief API to enable or bypass the data cache for the CPU which calls this API.
  *
@@ -297,12 +342,6 @@ IFX_INLINE void IfxCpu_setDataCache(boolean enable);
  */
 IFX_INLINE void IfxCpu_setProgramCache(boolean enable);
 
-/** \brief API to determine if an address is in a cachable or non-cachable Flash/LMU section
- * \param address Address
- * \return Status TRUE/FALSE
- */
-IFX_INLINE boolean IfxCpu_isAddressCachable(void *address);
-
 /** \} */
 
 /** \addtogroup IfxLld_Cpu_Std_PerformanceCounter
@@ -320,14 +359,6 @@ IFX_INLINE boolean IfxCpu_isAddressCachable(void *address);
  */
 IFX_INLINE uint32 IfxCpu_getClockCounter(void);
 
-/** \brief API to read the instruction counter for the CPU which calls this API.
- *
- * This API can be used to read instruction counter of only the caller CPU. It cannot be
- * used for this activity towards other CPUs
- * \return Counter value. 0 to 0x7FFFFFFF.
- */
-IFX_INLINE uint32 IfxCpu_getInstructionCounter(void);
-
 /** \brief API to get sticky overflow bit of clock counter for the CPU, which calls this API.
  *
  * This API can be used to get sticky overflow bit of clock counter of only the caller CPU.
@@ -340,6 +371,14 @@ IFX_INLINE uint32 IfxCpu_getInstructionCounter(void);
  * \retval FALSE: Sticky overflow bit is reset
  */
 IFX_INLINE boolean IfxCpu_getClockCounterStickyOverflow(void);
+
+/** \brief API to read the instruction counter for the CPU which calls this API.
+ *
+ * This API can be used to read instruction counter of only the caller CPU. It cannot be
+ * used for this activity towards other CPUs
+ * \return Counter value. 0 to 0x7FFFFFFF.
+ */
+IFX_INLINE uint32 IfxCpu_getInstructionCounter(void);
 
 /** \brief API to get sticky overflow bit of Instruction counter for the CPU, which calls this API.
  *
@@ -354,6 +393,27 @@ IFX_INLINE boolean IfxCpu_getClockCounterStickyOverflow(void);
  */
 IFX_INLINE boolean IfxCpu_getInstructionCounterStickyOverflow(void);
 
+/** \brief API to read the performance counter for the CPU which calls this API.
+ * \param address Address
+ * \return counter value
+ */
+IFX_INLINE uint32 IfxCpu_getPerformanceCounter(uint32 address);
+
+/** \brief API to get sticky overflow bit of performance counter for the CPU, which calls this API.
+ * This is generic function to get sticky overflow bit of any performance counters
+ * \param address Address
+ * \return Status
+ */
+IFX_INLINE boolean IfxCpu_getPerformanceCounterStickyOverflow(uint32 address);
+
+/** \brief Reset and start instruction, clock and multi counters
+ *
+ * Reset and start CCNT, ICNT, M1CNT, M2CNT, M3CNT. the overflow bits are cleared.
+ * \param mode Counter mode
+ * \return None
+ */
+IFX_INLINE void IfxCpu_resetAndStartCounters(IfxCpu_CounterMode mode);
+
 /** \brief API to enable or disable performance counter for the CPU which calls this API.
  *
  * This API can be used to enable or disable performance counter of only the caller CPU. It cannot be
@@ -364,6 +424,14 @@ IFX_INLINE boolean IfxCpu_getInstructionCounterStickyOverflow(void);
  * \return None
  */
 IFX_INLINE void IfxCpu_setPerformanceCountersEnableBit(uint32 enable);
+
+/** \brief Stop instruction and clock counters, return their values
+ *
+ * Stop CCNT, ICNT, M1CNT, M2CNT, M3CNT and return their values;
+ *  \Note The CCTRL is reset to 0, for more accurate measurements and has to be initialized again before strating the next performance measurement.
+ * \return Performance counter result
+ */
+IFX_INLINE IfxCpu_Perf IfxCpu_stopCounters(void);
 
 /** \brief API to update clock counter for the CPU which calls this API.
  *
@@ -383,35 +451,6 @@ IFX_INLINE void IfxCpu_updateClockCounter(uint32 count);
  */
 IFX_INLINE void IfxCpu_updateInstructionCounter(uint32 count);
 
-/** \brief Reset and start instruction, clock and multi counters
- *
- * Reset and start CCNT, ICNT, M1CNT, M2CNT, M3CNT. the overflow bits are cleared.
- * \param mode Counter mode
- * \return None
- */
-IFX_INLINE void IfxCpu_resetAndStartCounters(IfxCpu_CounterMode mode);
-
-/** \brief Stop instruction and clock counters, return their values
- *
- * Stop CCNT, ICNT, M1CNT, M2CNT, M3CNT and return their values;
- *  \Note The CCTRL is reset to 0, for more accurate measurements and has to be initialized again before strating the next performance measurement.
- * \return Performance counter result
- */
-IFX_INLINE IfxCpu_Perf IfxCpu_stopCounters(void);
-
-/** \brief API to read the performance counter for the CPU which calls this API.
- * \param address Address
- * \return counter value
- */
-IFX_INLINE uint32 IfxCpu_getPerformanceCounter(uint32 address);
-
-/** \brief API to get sticky overflow bit of performance counter for the CPU, which calls this API.
- * This is generic function to get sticky overflow bit of any performance counters
- * \param address Address
- * \return Status
- */
-IFX_INLINE boolean IfxCpu_getPerformanceCounterStickyOverflow(uint32 address);
-
 /** \brief API to update performance counter for the CPU which calls this API.
  * This is generic function to update any of the performance counters
  * \param address Address
@@ -428,33 +467,6 @@ IFX_INLINE void IfxCpu_updatePerformanceCounter(uint32 address, uint32 count);
 /******************************************************************************/
 /*-------------------------Global Function Prototypes-------------------------*/
 /******************************************************************************/
-
-/** \brief API to lock the resource in spin mode with the given timeout.
- *
- * This API can be used to spin lock for the lock for the given timeout period.
- * \param lock lock pointer
- * \param timeoutCount loop counter value used for timeout to acquire lock
- * \return TRUE : lock acquired successfully. FALSE: Failed to acquire the lock
- *
- * \code
- *    IfxCpu_spinLock resourceLock;
- *    boolean flag = IfxCpu_setSpinLock(&resourceLock, 0xFFFF);
- *    if (flag){
- *      // critical section
- *      IfxCpu_resetSpinLock(&resourceLock);
- *    }
- * \endcode
- *
- */
-IFX_EXTERN boolean IfxCpu_setSpinLock(IfxCpu_spinLock *lock, uint32 timeoutCount);
-
-/** \brief API to unlock the resource .
- *
- * This API can be used to unlock the previously acquired lock
- * \param lock lock pointer
- * \return None
- */
-IFX_EXTERN void IfxCpu_resetSpinLock(IfxCpu_spinLock *lock);
 
 /** \brief API to acquire the mutex (binary semaphore).
  *
@@ -491,6 +503,33 @@ IFX_EXTERN boolean IfxCpu_acquireMutex(IfxCpu_mutexLock *lock);
  *
  */
 IFX_EXTERN void IfxCpu_releaseMutex(IfxCpu_mutexLock *lock);
+
+/** \brief API to unlock the resource .
+ *
+ * This API can be used to unlock the previously acquired lock
+ * \param lock lock pointer
+ * \return None
+ */
+IFX_EXTERN void IfxCpu_resetSpinLock(IfxCpu_spinLock *lock);
+
+/** \brief API to lock the resource in spin mode with the given timeout.
+ *
+ * This API can be used to spin lock for the lock for the given timeout period.
+ * \param lock lock pointer
+ * \param timeoutCount loop counter value used for timeout to acquire lock
+ * \return TRUE : lock acquired successfully. FALSE: Failed to acquire the lock
+ *
+ * \code
+ *    IfxCpu_spinLock resourceLock;
+ *    boolean flag = IfxCpu_setSpinLock(&resourceLock, 0xFFFF);
+ *    if (flag){
+ *      // critical section
+ *      IfxCpu_resetSpinLock(&resourceLock);
+ *    }
+ * \endcode
+ *
+ */
+IFX_EXTERN boolean IfxCpu_setSpinLock(IfxCpu_spinLock *lock, uint32 timeoutCount);
 
 /** \} */
 
@@ -535,6 +574,26 @@ IFX_INLINE void IfxCpu_initCSA(uint32 *csaBegin, uint32 *csaEnd)
 }
 
 
+IFX_INLINE void IfxCpu_setSafetyTaskIdentifier(boolean safetyId)
+{
+    Ifx_CPU_PSW psw;
+    IFX_ASSERT(IFX_VERBOSE_LEVEL_ERROR, (safetyId == 0 || safetyId == 1));
+    psw.U   = __mfcr(CPU_PSW);
+    psw.B.S = safetyId;
+    __mtcr(CPU_PSW, (uint32)psw.U);
+}
+
+
+IFX_INLINE void IfxCpu_triggerSwReset(void)
+{
+    MODULE_SCU.SWRSTCON.B.SWRSTREQ = 1;
+
+    /* Wait till reset */
+    while (1)
+    {}
+}
+
+
 IFX_INLINE boolean IfxCpu_areInterruptsEnabled(void)
 {
     Ifx_CPU_ICR reg;
@@ -559,12 +618,102 @@ IFX_INLINE void IfxCpu_enableInterrupts(void)
 }
 
 
+IFX_INLINE void IfxCpu_forceDisableInterrupts(void)
+{
+    __disable();
+    __nop();
+}
+
+
 IFX_INLINE void IfxCpu_restoreInterrupts(boolean enabled)
 {
     if (enabled != FALSE)
     {
         __enable();
     }
+}
+
+
+IFX_INLINE void IfxCpu_enableSegmentSpecificDataAccessCacheability(uint16 segmentNumberMask, boolean enable)
+{
+    uint32 cpu_pmaVal;
+    uint16 checkRestrictionMask;
+    uint32 coreId      = IfxCpu_getCoreId();
+    uint16 wdtPassword = IfxScuWdt_getCpuWatchdogPasswordInline(&MODULE_SCU.WDTCPU[coreId]);
+
+    /*resolve the restrictions*/
+    /*In PMA0 Segment-C and Segment[7-CoreID] must have the same value */
+    checkRestrictionMask = ((uint16)1 << (7 - coreId)) | ((uint16)1 << 0xC);
+
+    if ((segmentNumberMask & checkRestrictionMask) != 0)
+    {
+        segmentNumberMask |= checkRestrictionMask;
+    }
+
+    cpu_pmaVal = __mfcr(CPU_PMA0);                                                              /* Read the CPU_PMA0 */
+
+    cpu_pmaVal = enable ? (cpu_pmaVal | segmentNumberMask) : (cpu_pmaVal & ~segmentNumberMask); /* enable or disable the corresponding bitfield */
+
+    /*The CPU_PMA registers are ENDINIT protected*/
+    IfxScuWdt_clearCpuEndinitInline(&MODULE_SCU.WDTCPU[coreId], wdtPassword);
+    /*When changing the value of the CPU_PMAx registers both the instruction and data caches should be invalidated*/
+    /*Write to PMA0 register for selecting the cacheability for data cache*/
+    __dsync();      /* DSYNC instruction should be executed immediately prior to the MTCR*/
+    __mtcr(CPU_PMA0, cpu_pmaVal);
+    __isync();      /* ISYNC instruction executed immediately following MTCR */
+    IfxScuWdt_setCpuEndinitInline(&MODULE_SCU.WDTCPU[coreId], wdtPassword);
+}
+
+
+IFX_INLINE void IfxCpu_enableSegmentSpecificInstructionAccessCacheability(uint16 segmentNumberMask, boolean enable)
+{
+    uint32 cpu_pmaVal;
+    uint16 checkRestrictionMask;
+    uint32 coreId      = IfxCpu_getCoreId();
+    uint16 wdtPassword = IfxScuWdt_getCpuWatchdogPasswordInline(&MODULE_SCU.WDTCPU[coreId]);
+
+    /*resolve the restrictions*/
+    /*In PMA1 Segment-D and Segment[7-CoreID] must have the same value */
+    checkRestrictionMask = ((uint16)1 << (7 - coreId)) | ((uint16)1 << 0xD);
+
+    if ((segmentNumberMask & checkRestrictionMask) != 0)
+    {
+        segmentNumberMask |= checkRestrictionMask;
+    }
+
+    cpu_pmaVal = __mfcr(CPU_PMA1);                                                              /* Read the CPU_PMA1 */
+
+    cpu_pmaVal = enable ? (cpu_pmaVal | segmentNumberMask) : (cpu_pmaVal & ~segmentNumberMask); /* enable or disable the corresponding bitfield */
+
+    /*The CPU_PMA registers are ENDINIT protected*/
+    IfxScuWdt_clearCpuEndinitInline(&MODULE_SCU.WDTCPU[coreId], wdtPassword);
+    /*When changing the value of the CPU_PMAx registers both the instruction and data caches should be invalidated*/
+    /*Write to PMA1 register for selecting the cacheability for data cache*/
+    __dsync();      /* DSYNC instruction should be executed immediately prior to the MTCR */
+    __mtcr(CPU_PMA1, cpu_pmaVal);
+    __isync();      /* ISYNC instruction executed immediately following MTCR */
+    IfxScuWdt_setCpuEndinitInline(&MODULE_SCU.WDTCPU[coreId], wdtPassword);
+}
+
+
+IFX_INLINE void IfxCpu_invalidateProgramCache(void)
+{
+    uint16 cpuWdtPassword = IfxScuWdt_getCpuWatchdogPassword();
+    {
+        IfxScuWdt_clearCpuEndinit(cpuWdtPassword);
+        Ifx_CPU_PCON1 pcon1;
+        pcon1.U       = __mfcr(CPU_PCON1);
+        pcon1.B.PCINV = 1;
+        __mtcr(CPU_PCON1, pcon1.U);
+        IfxScuWdt_setCpuEndinit(cpuWdtPassword);
+    }
+}
+
+
+IFX_INLINE boolean IfxCpu_isAddressCachable(void *address)
+{
+    uint8 segment = (uint32)address >> 24;
+    return ((segment == IFXCPU_CACHABLE_FLASH_SEGMENT) || (segment == IFXCPU_CACHABLE_LMU_SEGMENT)) ? TRUE : FALSE;
 }
 
 
@@ -588,6 +737,14 @@ IFX_INLINE void IfxCpu_setDataCache(boolean enable)
 
 IFX_INLINE void IfxCpu_setProgramCache(boolean enable)
 {
+    if (enable)
+    {                           /* Step 3: Initiate invalidation of current cache contents if any */
+        Ifx_CPU_PCON1 pcon1;
+        pcon1.U       = 0;
+        pcon1.B.PCINV = 1;
+        __mtcr(CPU_PCON1, pcon1.U);
+    }
+
     uint32 coreId      = IfxCpu_getCoreId();
     uint16 wdtPassword = IfxScuWdt_getCpuWatchdogPasswordInline(&MODULE_SCU.WDTCPU[coreId]);
     /*PCACHE enable steps */
@@ -601,21 +758,6 @@ IFX_INLINE void IfxCpu_setProgramCache(boolean enable)
     }
     /* Step 2: Call Isync */
     __isync();
-
-    if (enable)
-    {                           /* Step 3: Initiate invalidation of current cache contents if any */
-        Ifx_CPU_PCON1 pcon1;
-        pcon1.U       = 0;
-        pcon1.B.PCINV = 1;
-        __mtcr(CPU_PCON1, pcon1.U);
-    }
-}
-
-
-IFX_INLINE boolean IfxCpu_isAddressCachable(void *address)
-{
-    uint8 segment = (uint32)address >> 24;
-    return ((segment == IFXCPU_CACHABLE_FLASH_SEGMENT) || (segment == IFXCPU_CACHABLE_LMU_SEGMENT)) ? TRUE : FALSE;
 }
 
 
@@ -625,15 +767,15 @@ IFX_INLINE uint32 IfxCpu_getClockCounter(void)
 }
 
 
-IFX_INLINE uint32 IfxCpu_getInstructionCounter(void)
-{
-    return IfxCpu_getPerformanceCounter(CPU_ICNT);
-}
-
-
 IFX_INLINE boolean IfxCpu_getClockCounterStickyOverflow(void)
 {
     return IfxCpu_getPerformanceCounterStickyOverflow(CPU_CCNT);
+}
+
+
+IFX_INLINE uint32 IfxCpu_getInstructionCounter(void)
+{
+    return IfxCpu_getPerformanceCounter(CPU_ICNT);
 }
 
 
@@ -643,24 +785,21 @@ IFX_INLINE boolean IfxCpu_getInstructionCounterStickyOverflow(void)
 }
 
 
-IFX_INLINE void IfxCpu_setPerformanceCountersEnableBit(uint32 enable)
+IFX_INLINE uint32 IfxCpu_getPerformanceCounter(uint32 address)
 {
-    Ifx_CPU_CCTRL cctrl;
-    cctrl.U    = __mfcr(CPU_CCTRL);
-    cctrl.B.CE = enable;
-    __mtcr(CPU_CCTRL, cctrl.U);
+    Ifx_CPU_CCNT ccnt;
+    ccnt.U = __mfcr(address);
+    return ccnt.B.CountValue;
 }
 
 
-IFX_INLINE void IfxCpu_updateClockCounter(uint32 count)
+IFX_INLINE boolean IfxCpu_getPerformanceCounterStickyOverflow(uint32 address)
 {
-    IfxCpu_updatePerformanceCounter(CPU_CCNT, count);
-}
+    Ifx_CPU_CCNT ccnt;
 
+    ccnt.U = __mfcr(address);   /*read the counter */
 
-IFX_INLINE void IfxCpu_updateInstructionCounter(uint32 count)
-{
-    IfxCpu_updatePerformanceCounter(CPU_ICNT, count);
+    return ccnt.B.SOvf;
 }
 
 
@@ -682,6 +821,15 @@ IFX_INLINE void IfxCpu_resetAndStartCounters(IfxCpu_CounterMode mode)
     /*Enable the counters, set the counter mode */
     cctrl.B.CE = 1;
     cctrl.B.CM = mode;
+    __mtcr(CPU_CCTRL, cctrl.U);
+}
+
+
+IFX_INLINE void IfxCpu_setPerformanceCountersEnableBit(uint32 enable)
+{
+    Ifx_CPU_CCTRL cctrl;
+    cctrl.U    = __mfcr(CPU_CCTRL);
+    cctrl.B.CE = enable;
     __mtcr(CPU_CCTRL, cctrl.U);
 }
 
@@ -721,21 +869,15 @@ IFX_INLINE IfxCpu_Perf IfxCpu_stopCounters(void)
 }
 
 
-IFX_INLINE uint32 IfxCpu_getPerformanceCounter(uint32 address)
+IFX_INLINE void IfxCpu_updateClockCounter(uint32 count)
 {
-    Ifx_CPU_CCNT ccnt;
-    ccnt.U = __mfcr(address);
-    return ccnt.B.CountValue;
+    IfxCpu_updatePerformanceCounter(CPU_CCNT, count);
 }
 
 
-IFX_INLINE boolean IfxCpu_getPerformanceCounterStickyOverflow(uint32 address)
+IFX_INLINE void IfxCpu_updateInstructionCounter(uint32 count)
 {
-    Ifx_CPU_CCNT ccnt;
-
-    ccnt.U = __mfcr(address);   /*read the counter */
-
-    return ccnt.B.SOvf;
+    IfxCpu_updatePerformanceCounter(CPU_ICNT, count);
 }
 
 
